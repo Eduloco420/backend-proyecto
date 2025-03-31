@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from funcion_jwt import write_token, valida_token
 from db import get_db
+from hashed import check_password
 
 routes_auth = Blueprint("routes_auth", __name__)
 
@@ -9,24 +10,26 @@ def login():
     data = request.get_json()
     conexion = get_db()
     cursor = conexion.connection.cursor()
-    sql = "SELECT * FROM usuario WHERE mailUsuario = %s AND passUsuario = %s "
-    cursor.execute(sql, (data['mail'],data['password']))
+    sql = "SELECT * FROM usuario WHERE mailUsuario = %s "
+    cursor.execute(sql, (data['mail'],))
     resultado = cursor.fetchone()
+    if resultado is None:
+        return jsonify({"error": "Usuario no encontrado"}), 401
     if resultado[8] == 0:
         return jsonify({"mensaje":"Usuario bloqueado, favor contactar a soporte"})
-    if resultado:
-        usuario = { 'id':resultado[0],
-                    'rutUsuario':resultado[1],
-                    'nomUsuario':resultado[2],
-                    'apeUsuario':resultado[3],
-                    'mailUsuario':resultado[4],
-                    'rolUsuario':resultado[5],
-                    'passUsuario':resultado[6],
-                    'fecCreacionUsuario':resultado[7].strftime("%Y-%m-%d %H:%M:%S"),
-                    'activeUsuario':resultado[8]    }
+    usuario = { 'id':resultado[0],
+                'rutUsuario':resultado[1],
+                'nomUsuario':resultado[2],
+                'apeUsuario':resultado[3],
+                'mailUsuario':resultado[4],
+                'rolUsuario':resultado[5],
+                'passUsuario':resultado[6],
+                'fecCreacionUsuario':resultado[7].strftime("%Y-%m-%d %H:%M:%S"),
+                'activeUsuario':resultado[8]    }
+    if check_password(usuario['passUsuario'],data['password']):
         return write_token(data=usuario)
     else:
-        return jsonify({"mensaje":"Credenciales Incorrectas"})
+        return jsonify({'mensaje':'contraseña incorrecta'})
 
 @routes_auth.route("/verify/token")
 def verify_token():

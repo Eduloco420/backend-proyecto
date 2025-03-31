@@ -1,0 +1,37 @@
+{
+    "nomProducto":"",
+    "descProducto":"",
+    "subCategoria":"",
+    "marca":"",
+    "opcion":"",
+    "retiroSucursal":"",
+    "despachoDomicilio":"",
+    "precio":"",
+    "especificaciones":[
+        {
+            "nombre":"",
+            "valor":""
+        },
+        {
+            "nombre":"",
+            "valor":""
+        }
+    ],
+    "stock":[
+        {
+            "opcion":"",
+            "sucursal":"",
+            "cantidad":""
+        },
+        {
+            "opcion":"",
+            "sucursal":"",
+            "cantidad":""
+        },
+        {
+            "opcion":"",
+            "sucursal":"",
+            "cantidad":""
+        }
+    ]
+}
