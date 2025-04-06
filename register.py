@@ -1,5 +1,51 @@
 from flask import jsonify
 from hashed import hash_password
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import os
+from dotenv import load_dotenv
+
+def enviar_correo(destinatario, nombre, apellido):
+    remitente = os.getenv('MAIL')
+    password = os.getenv('MAIL_PASS')
+
+    servidor_smtp = "smtp.gmail.com"
+    puerto = 587  
+
+    print(f'remitente: {remitente}')
+    print(f'password: {password}')
+
+    msg = MIMEMultipart()
+    msg["From"] = remitente
+    msg["To"] = destinatario
+    msg["Subject"] = "Confirmación de Registro"
+
+    cuerpo = f"""
+    Hola {nombre} {apellido},
+
+    Gracias por registrarte en nuestro sitio. 
+    Activa tu cuenta haciendo clic en el siguiente enlace:
+
+    http://tu-sitio.com/activar-cuenta?email={destinatario}
+
+    Saludos,
+    Tu equipo.
+    """
+    msg.attach(MIMEText(cuerpo, "plain"))
+
+    try:
+        # Conectar con el servidor y enviar correo
+        servidor = smtplib.SMTP(servidor_smtp, puerto)
+        servidor.starttls()  # Iniciar conexión segura
+        servidor.login(remitente, password)
+        servidor.sendmail(remitente, destinatario, msg.as_string())
+        servidor.quit()
+        print("Correo enviado con éxito")
+    except Exception as e:
+        print(f"Error enviando correo: {str(e)}")
+
+
 
 def registrar(con, data):
     rut = data['rut']
@@ -19,14 +65,11 @@ def registrar(con, data):
         cursor.execute(sql, (rut,nombre,apellido,mail,rol,hashedPassword))
 
         con.connection.commit()
+        enviar_correo(destinatario=mail, nombre=nombre, apellido=apellido)
         response = jsonify({'mensaje':'Usuario creado con exito'})
         response.status_code = 200
         return response
     
     except Exception as e:
         con.connection.rollback()
-        return jsonify({'mensaje':'Error en la creación de usuario ' + e})
-    
-#def activarCuenta(con):
-
-
+        return jsonify({'mensaje':'Error en la creación de usuario ' + str(e)})

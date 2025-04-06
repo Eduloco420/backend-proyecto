@@ -1,4 +1,7 @@
 from flask import jsonify
+import os
+import uuid
+import math
 
 def crear_categoria(con, data):
     categoria = data['categoria']
@@ -30,11 +33,12 @@ def crear_marca(con,data):
     sql = "INSERT INTO marca (nomMarca) VALUES (%s)"
     cursor.execute(sql, (marca,))
     con.connection.commit()
-    response = jsonify({'mensaje':'Marca creada con exito'})
+    marca_id = cursor.lastrowid
+    response = jsonify({'mensaje':'Marca creada con exito', 'id':marca_id})
     response.status_code = 200
     return response
 
-def crear_producto(con, data):
+def crear_producto(con, data, imagenes, app):
     nom_producto = data['nomProducto']
     desc_producto = data['descProducto']
     subcategoria = data['subCategoria']
@@ -63,21 +67,71 @@ def crear_producto(con, data):
             
         sqlOpcion = ('INSERT INTO opcionProducto (producto, glosaOpcion) VALUES (%s,%s)')
         sqlStock = ('INSERT INTO inventario (producto, stock, sucursal) VALUES (%s,%s,%s)')
+        sqlImagen = ('INSERT INTO imagenproducto (producto, imagen) VALUES (%s, %s)')
+
         for i in stock:
             cursor.execute(sqlOpcion, (producto_id, i['opcion']))
             opcion_id = cursor.lastrowid
             cursor.execute(sqlStock, (opcion_id, i['cantidad'], i['sucursal']))
 
+        rutas_imagenes = []
+            
+        for img in imagenes:
+            if img.filename != '':
+                ext = os.path.splitext(img.filename)[1]
+                nombreArchivo = f"{producto_id}_{uuid.uuid4().hex}{ext}"
+                ruta = os.path.join(app.config['UPLOAD_FOLDER'], nombreArchivo)
+                img.save(ruta)
+                rutas_imagenes.append(ruta)
+                cursor.execute(sqlImagen, (producto_id, nombreArchivo))
+
         con.connection.commit()
         cursor.close()
 
-        response = jsonify({'mensaje':'Producto creado con exito'})    
+        response = jsonify({'mensaje':'Producto creado con exito'})
         response.status_code = 200
         return response
     except Exception as e:
         con.connection.rollback()
         return jsonify({'mensaje':f"Error al insertar producto: {e}"})
-
-
-
-
+    
+def lista_productos(con, pagina, categoria, subcategoria):
+    cant_prod = 12
+    offset = (pagina - 1) * cant_prod
+    cursor = con.connection.cursor()
+    cursor.execute("SELECT count(idProducto) FROM v_producto_lista")
+    total_prod = cursor.fetchone()[0]
+    total_pag = int(math.ceil(total_prod/cant_prod))
+    if categoria:
+        sql = 'SELECT * FROM v_producto_lista WHERE idcategoria = %s LIMIT %s OFFSET %s'
+        cursor.execute(sql, (categoria, cant_prod, offset))
+    elif subcategoria:
+        sql = 'SELECT * FROM v_producto_lista WHERE idsubcategoria = %s LIMIT %s OFFSET %s'
+        cursor.execute(sql, (subcategoria, cant_prod, offset)) 
+    else:    
+        sql = 'SELECT * FROM v_producto_lista LIMIT %s OFFSET %s'
+        cursor.execute(sql, (cant_prod, offset))
+    datos = cursor.fetchall()
+    productos = []
+    for i in datos:
+        producto = {'idProducto':i[0],
+                    'nomProducto':i[1],
+                    'idCategoria':i[2],
+                    'idMarca':i[3],
+                    'idSubCategoria':i[4],
+                    'nomCategoria':i[5],
+                    'nomSubCategoria':i[6],
+                    'nomMarca':i[7],
+                    'valorOriginal':i[8],
+                    'valorOferta':i[9],
+                    'imagen':i[10],
+                    'despacho':i[11],
+                    'retiro':i[12]}
+        productos.append(producto)
+    response = jsonify({'mensaje':'Listado Extraido correctamente',
+                        'paginaActual': pagina,
+                        'paginasTotal': total_pag,
+                        'Productos':productos})
+    response.status_code = 200
+    return response
+    

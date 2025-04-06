@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_mysqldb import MySQL
 from config import config
 from dotenv import load_dotenv
@@ -6,6 +6,7 @@ from login import routes_auth
 from db import app, get_db
 import producto, sucursal
 from register import registrar
+import json
 
 app.register_blueprint(routes_auth)
 conexion = get_db()
@@ -55,8 +56,27 @@ def get_sucursal():
 
 @app.route('/producto', methods=['POST'])
 def post_producto():
-    data = request.get_json()
-    return producto.crear_producto(conexion, data)
+    data = request.form.get('data')
+    if not data:
+        return jsonify({"error": "No se recibió el JSON"}), 400
+    
+    data = json.loads(data)  
+
+    imagenes = request.files.getlist('imagenes')
+
+    return producto.crear_producto(conexion, data, imagenes, app)
+
+@app.route('/producto', methods=['GET'])
+def get_producto():
+    pagina = int(request.args.get('pagina', 1))
+    categoria = request.args.get('categoria')
+    subcategoria = request.args.get('subcategoria')
+    return producto.lista_productos(conexion, pagina, categoria, subcategoria)
+
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    return send_from_directory('uploads', filename)
+
 
 if __name__ == '__main__':
     load_dotenv()
