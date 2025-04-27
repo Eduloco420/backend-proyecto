@@ -6,7 +6,7 @@ from email.mime.text import MIMEText
 import os
 from dotenv import load_dotenv
 
-def enviar_correo(destinatario, nombre, apellido):
+def enviar_correo(destinatario, nombre, apellido, dominio):
     remitente = os.getenv('MAIL')
     password = os.getenv('MAIL_PASS')
 
@@ -27,7 +27,7 @@ def enviar_correo(destinatario, nombre, apellido):
     Gracias por registrarte en nuestro sitio. 
     Activa tu cuenta haciendo clic en el siguiente enlace:
 
-    http://tu-sitio.com/activar-cuenta?email={destinatario}
+    {dominio}/activar-cuenta?email={destinatario}
 
     Saludos,
     Tu equipo.
@@ -44,8 +44,6 @@ def enviar_correo(destinatario, nombre, apellido):
         print("Correo enviado con éxito")
     except Exception as e:
         print(f"Error enviando correo: {str(e)}")
-
-
 
 def registrar(con, data):
     rut = data['rut']
@@ -65,7 +63,10 @@ def registrar(con, data):
         cursor.execute(sql, (rut,nombre,apellido,mail,rol,hashedPassword))
 
         con.connection.commit()
-        enviar_correo(destinatario=mail, nombre=nombre, apellido=apellido)
+        sql = 'SELECT dominioTienda from tienda'
+        cursor.execute(sql)
+        dominio = cursor.fetchone()[0]
+        enviar_correo(destinatario=mail, nombre=nombre, apellido=apellido, dominio=dominio)
         response = jsonify({'mensaje':'Usuario creado con exito'})
         response.status_code = 200
         return response
@@ -73,3 +74,12 @@ def registrar(con, data):
     except Exception as e:
         con.connection.rollback()
         return jsonify({'mensaje':'Error en la creación de usuario ' + str(e)})
+    
+def validar_cuenta(con, data):
+    cursor = con.connection.cursor()
+    usuario_id = data['id']
+    sql = 'UPDATE usuario SET activeUsuario = 1 WHERE id = %s'
+    cursor.execute(sql, (usuario_id, ))
+    response = jsonify({'mensaje':'Usuario activado con exito'})
+    response.status_code = 200
+    return response

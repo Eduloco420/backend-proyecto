@@ -1,6 +1,6 @@
-CREATE SCHEMA easyCommerce;
+CREATE SCHEMA multiShop;
 
-USE easyCommerce;
+USE multiShop;
 
 CREATE TABLE `tienda` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
@@ -119,15 +119,15 @@ CREATE TABLE `estadoVenta` (
 
 CREATE TABLE `venta` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
-  `cliente` int NOT NULL,
-  `clienteInvitado` int NOT NULL,
+  `cliente` int,
+  `clienteInvitado` int,
   `fecVenta` datetime DEFAULT NOW(),
   `estadoVenta` int NOT NULL
 );
 
 CREATE TABLE `estadoDespacho` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
-  `glosaEstadoDespacho` varchar(20) NOT NULL
+  `glosaEstadoDespacho` varchar(50) NOT NULL
 );
 
 CREATE TABLE `despacho` (
@@ -147,7 +147,7 @@ CREATE TABLE `despacho` (
 CREATE TABLE `pago` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `venta` int NOT NULL,
-  `nroTarjeta` int NOT NULL,
+  `nroTarjeta` varchar(16) NOT NULL,
   `fecVencTarjeta` varchar(5) NOT NULL,
   `cvv` int NOT NULL,
   `montoPago` float NOT NULL,
@@ -189,7 +189,7 @@ CREATE TABLE `opcionProducto` (
 
 CREATE TABLE `estadoRetiro` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
-  `glosaEstadoRetiro` varchar(20)
+  `glosaEstadoRetiro` varchar(50) NOT NULL
 );
 
 CREATE TABLE `retiro` (
@@ -202,7 +202,7 @@ CREATE TABLE `retiro` (
 
 CREATE TABLE `estadoPago` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
-  `glosaEstadoPago` varchar(20)
+  `glosaEstadoPago` varchar(50)
 );
 
 CREATE TABLE `marca` (
@@ -262,7 +262,7 @@ ALTER TABLE `especificacionProducto` ADD FOREIGN KEY (`producto`) REFERENCES `pr
 
 ALTER TABLE `opcionProducto` ADD FOREIGN KEY (`producto`) REFERENCES `productos` (`id`);
 
-ALTER TABLE `inventario` ADD FOREIGN KEY (`id`) REFERENCES `opcionProducto` (`id`);
+ALTER TABLE `inventario` ADD FOREIGN KEY (`producto`) REFERENCES `opcionProducto` (`id`);
 
 ALTER TABLE `productos` ADD FOREIGN KEY (`subCatProducto`) REFERENCES `subCategoria` (`id`);
 

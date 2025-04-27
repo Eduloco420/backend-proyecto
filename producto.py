@@ -65,14 +65,16 @@ def crear_producto(con, data, imagenes, app):
         for i in especificaciones:
             cursor.execute(sql, (producto_id, i['nombre'], i['valor']))
             
-        sqlOpcion = ('INSERT INTO opcionProducto (producto, glosaOpcion) VALUES (%s,%s)')
+        sqlOpcion = ('INSERT INTO opcionProducto (producto, glosaOpcion, opcionActiva) VALUES (%s,%s,1)')
         sqlStock = ('INSERT INTO inventario (producto, stock, sucursal) VALUES (%s,%s,%s)')
         sqlImagen = ('INSERT INTO imagenproducto (producto, imagen) VALUES (%s, %s)')
 
         for i in stock:
             cursor.execute(sqlOpcion, (producto_id, i['opcion']))
             opcion_id = cursor.lastrowid
-            cursor.execute(sqlStock, (opcion_id, i['cantidad'], i['sucursal']))
+            for c in i['cantidad']:
+                cantidad_valor = c.get('cant')  
+                cursor.execute(sqlStock, (opcion_id, cantidad_valor, c['sucursal']))
 
         rutas_imagenes = []
             
@@ -95,22 +97,33 @@ def crear_producto(con, data, imagenes, app):
         con.connection.rollback()
         return jsonify({'mensaje':f"Error al insertar producto: {e}"})
     
-def lista_productos(con, pagina, categoria, subcategoria):
+def lista_productos(con, pagina, categoria, subcategoria,search):
     cant_prod = 12
     offset = (pagina - 1) * cant_prod
     cursor = con.connection.cursor()
-    cursor.execute("SELECT count(idProducto) FROM v_producto_lista")
-    total_prod = cursor.fetchone()[0]
-    total_pag = int(math.ceil(total_prod/cant_prod))
     if categoria:
+        cursor.execute("SELECT count(idProducto) FROM v_producto_lista where idcategoria = %s", (categoria, ))
+        total_prod = cursor.fetchone()[0]
+        total_pag = int(math.ceil(total_prod/cant_prod))
         sql = 'SELECT * FROM v_producto_lista WHERE idcategoria = %s LIMIT %s OFFSET %s'
         cursor.execute(sql, (categoria, cant_prod, offset))
     elif subcategoria:
+        cursor.execute("SELECT count(idProducto) FROM v_producto_lista where idsubcategoria = %s", (subcategoria, ))
+        total_prod = cursor.fetchone()[0]
+        total_pag = int(math.ceil(total_prod/cant_prod))
         sql = 'SELECT * FROM v_producto_lista WHERE idsubcategoria = %s LIMIT %s OFFSET %s'
-        cursor.execute(sql, (subcategoria, cant_prod, offset)) 
+        cursor.execute(sql, (subcategoria, cant_prod, offset))
+    elif search:
+        cursor.execute("SELECT count(idProducto) FROM v_producto_lista where LOWER(nomProducto) like %s", (f"%{search.lower()}%", ))
+        total_prod = cursor.fetchone()[0]
+        total_pag = int(math.ceil(total_prod/cant_prod))
+        sql = 'SELECT * FROM v_producto_lista where LOWER(nomProducto) like %s LIMIT %s OFFSET %s'
+        cursor.execute(sql, (f"%{search.lower()}%", cant_prod, offset))
     else:    
-        sql = 'SELECT * FROM v_producto_lista LIMIT %s OFFSET %s'
-        cursor.execute(sql, (cant_prod, offset))
+        sql = 'SELECT * FROM v_producto_lista'
+        cursor.execute(sql)
+        total_pag = 0
+        pagina = 0 
     datos = cursor.fetchall()
     productos = []
     for i in datos:
@@ -134,4 +147,3 @@ def lista_productos(con, pagina, categoria, subcategoria):
                         'Productos':productos})
     response.status_code = 200
     return response
-    

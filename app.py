@@ -4,12 +4,15 @@ from config import config
 from dotenv import load_dotenv
 from login import routes_auth
 from db import app, get_db
-import producto, sucursal
+import producto, sucursal, ventas
 from register import registrar
 import json
+from flask_cors import CORS
 
 app.register_blueprint(routes_auth)
 conexion = get_db()
+
+CORS(app, origins=["http://127.0.0.1:3000", "http://localhost:3000","http://127.0.0.1:5500", "http://localhost:5500", "http://localhost:5173/", "http://127.0.0.1:5173/"])
 
 @app.route('/prueba', methods=['GET'])
 def prueba(): 
@@ -71,7 +74,13 @@ def get_producto():
     pagina = int(request.args.get('pagina', 1))
     categoria = request.args.get('categoria')
     subcategoria = request.args.get('subcategoria')
-    return producto.lista_productos(conexion, pagina, categoria, subcategoria)
+    search = request.args.get('search')
+    return producto.lista_productos(conexion, pagina, categoria, subcategoria,search)
+
+@app.route('/venta', methods=['POST'])
+def post_venta():
+    data = request.get_json()
+    return ventas.ingresar_venta(conexion, data)
 
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):

@@ -27,11 +27,14 @@ def login():
                 'fecCreacionUsuario':resultado[7].strftime("%Y-%m-%d %H:%M:%S"),
                 'activeUsuario':resultado[8]    }
     if check_password(usuario['passUsuario'],data['password']):
-        return write_token(data=usuario)
+        token = str(write_token(data=usuario)).split("'")[1]
+        response = jsonify({'mensaje':'logueado con exito', 'token':token})
+        response.status_code = 200
+        return response
     else:
         return jsonify({'mensaje':'contraseña incorrecta'})
 
 @routes_auth.route("/verify/token")
 def verify_token():
-    token = request.headers['Authorization'].split(" ")[1]
+    token = request.headers['Authorization']
     return valida_token(token, output=True)
