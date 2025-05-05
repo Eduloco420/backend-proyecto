@@ -8,7 +8,6 @@ def expire_date(days:int):
     new_date = now + timedelta(days)
     return new_date
 
-
 def write_token(data:dict):
     token = encode(payload={**data, "exp":expire_date(2)}, 
                     key=getenv("SECRET"), algorithm="HS256")

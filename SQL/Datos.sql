@@ -1,6 +1,8 @@
 INSERT INTO rolusuario VALUES (1, 'Cliente');
 INSERT INTO rolusuario VALUES (2, 'Administrador');
 
+INSERT INTO tienda VALUES (1, 'Tienda Prueba', null, null, null, 'localhost:8080');
+
 INSERT INTO estadoVenta VALUES 
 ('1','Pendiente'),
 ('2','Pagado'),

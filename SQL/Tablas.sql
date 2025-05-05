@@ -7,7 +7,8 @@ CREATE TABLE `tienda` (
   `nomTienda` varchar(100) NOT NULL,
   `facebookTienda` varchar(15),
   `instagramTienda` varchar(15),
-  `xTienda` varchar(15)
+  `xTienda` varchar(15),
+  `dominioTienda` varchar(255)
 );
 
 CREATE TABLE `usuario` (

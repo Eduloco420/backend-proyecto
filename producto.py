@@ -147,3 +147,57 @@ def lista_productos(con, pagina, categoria, subcategoria,search):
                         'Productos':productos})
     response.status_code = 200
     return response
+
+def ver_producto(con, prod):
+    cursor = con.connection.cursor()
+    sqlProducto = "SELECT * FROM v_detalle_producto_1 WHERE id = %s"
+    cursor.execute(sqlProducto, (prod, ))
+    productoData = cursor.fetchone()
+
+    sqlEspec = "SELECT * FROM v_detalle_producto_2 WHERE producto = %s"
+    cursor.execute(sqlEspec, (prod, ))
+    especData = cursor.fetchall()
+    especs = []
+
+    for e in especData:
+        espec = {'nomEspecificacion':e[1],
+                 'valorEspecificacion':e[2]}
+        especs.append(espec)
+
+    sqlStock = 'SELECT * FROM v_detalle_producto_3 WHERE producto = %s'
+    cursor.execute(sqlStock, (prod,))
+    stockData = cursor.fetchall()
+    stocks = []
+
+    for s in stockData:
+        stock = {'glosaOpcion':s[2],
+                 'cantStock':s[3]}
+        stocks.append(stock)    
+        
+    sqlImagen = 'SELECT imagen FROM imagenproducto WHERE producto = %s'
+    cursor.execute(sqlImagen, (prod, ))
+    imagenData = cursor.fetchall()
+    imagenes = []
+
+    for i in imagenData:
+        imagen = {'imagen':i[0]}
+        imagenes.append(imagen) 
+
+    producto = {'id':productoData[0],
+                'nombre':productoData[1],
+                'descripcion':productoData[2],
+                'subcategoriaId':productoData[3],
+                'subcategoria':productoData[4],
+                'categoriaId':productoData[5],
+                'categoria':productoData[6],
+                'marcaId':productoData[7],
+                'marca':productoData[8],
+                'despacho':bool(productoData[9]),
+                'retiro':bool(productoData[10]),
+                'opcion':productoData[11],
+                'especificaciones': especs,
+                'stock':stocks,
+                'imagenes':imagenes}
+    response = jsonify({'mensaje':'Ok', 'producto':producto})
+    response.status_code = 200
+    return response

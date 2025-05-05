@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from login import routes_auth
 from db import app, get_db
 import producto, sucursal, ventas
-from register import registrar
+from register import registrar, recuperar_contraseña, cambiar_contraseña, ver_usuario, actualizar_user
 import json
 from flask_cors import CORS
 
@@ -77,6 +77,10 @@ def get_producto():
     search = request.args.get('search')
     return producto.lista_productos(conexion, pagina, categoria, subcategoria,search)
 
+@app.route('/producto/<producto_id>', methods=['GET'])
+def get_detalle(producto_id):
+    return producto.ver_producto(conexion, producto_id)
+
 @app.route('/venta', methods=['POST'])
 def post_venta():
     data = request.get_json()
@@ -86,6 +90,27 @@ def post_venta():
 def uploaded_file(filename):
     return send_from_directory('uploads', filename)
 
+@app.route('/recuperar/mail', methods=['POST'])
+def mail_contraseña():
+    data = request.get_json()
+    return recuperar_contraseña(conexion, data)
+
+@app.route('/recuperar/cambiar', methods=['PUT'])
+def put_password():
+    data = request.get_json()
+    return cambiar_contraseña(conexion, data)
+
+@app.route('/usuarios', methods=['GET'])
+def get_user():
+    rut = request.args.get('rut')
+    mail = request.args.get('mail')
+
+    return ver_usuario(conexion, rut, mail)
+
+@app.route('/usuarios/<int:id>', methods=['PUT'])
+def put_user(id):
+    data = request.get_json()
+    return actualizar_user(conexion, data, id)
 
 if __name__ == '__main__':
     load_dotenv()
