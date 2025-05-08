@@ -201,3 +201,47 @@ def ver_producto(con, prod):
     response = jsonify({'mensaje':'Ok', 'producto':producto})
     response.status_code = 200
     return response
+
+def lista_subcategoria(con):
+    cursor = con.connection.cursor()
+    sql = "SELECT * FROM v_subcategorias"
+    cursor.execute(sql)
+    datos = cursor.fetchall()
+    subcategorias = []
+    for d in datos:
+        subcategoria = {'id':d[0],
+                        'nombre':d[1],
+                        'categoria':d[2],
+                        'categoriaNom':d[3]}
+        subcategorias.append(subcategoria)
+    response = jsonify({'mensaje':'Datos conseguidos correctamente','subcategorias':subcategorias})
+    response.status_code = 200
+    return response        
+    
+def lista_categoria(con):
+    cursor = con.connection.cursor()
+    sql = "SELECT * FROM categoria"
+    cursor.execute(sql)
+    datos = cursor.fetchall()
+    categorias = []
+    for d in datos:
+        categoria = {'id':d[0],
+                        'nombre':d[1]}
+        categorias.append(categoria)
+    response = jsonify({'mensaje':'Datos conseguidos correctamente','categoria':categorias})
+    response.status_code = 200
+    return response   
+
+def lista_marcas(con):
+    cursor = con.connection.cursor()
+    sql = "SELECT * FROM marca"
+    cursor.execute(sql)
+    datos = cursor.fetchall()
+    marcas = []
+    for d in datos:
+        marca = {'id':d[0],
+                 'nombre':d[1]}
+        marcas.append(marca)
+    response = jsonify({'mensaje':'Datos conseguidos correctamente', 'marcas':marcas})
+    response.status_code = 200
+    return response

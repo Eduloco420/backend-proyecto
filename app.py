@@ -12,7 +12,7 @@ from flask_cors import CORS
 app.register_blueprint(routes_auth)
 conexion = get_db()
 
-CORS(app, origins=["http://127.0.0.1:3000", "http://localhost:3000","http://127.0.0.1:5500", "http://localhost:5500", "http://localhost:5173/", "http://127.0.0.1:5173/"])
+CORS(app)
 
 @app.route('/prueba', methods=['GET'])
 def prueba(): 
@@ -38,10 +38,18 @@ def post_categoria():
     data = request.get_json()
     return producto.crear_categoria(conexion, data)
 
+@app.route('/producto/categoria', methods=['GET'])
+def get_categoria():
+    return producto.lista_categoria(conexion)
+
 @app.route('/producto/subcategoria', methods=['POST'])
 def post_subcategoria():
     data = request.get_json()
     return producto.crear_subcategoria(conexion, data)
+
+@app.route('/producto/subcategoria', methods=['GET'])
+def get_subcategoria():
+    return producto.lista_subcategoria(conexion)
 
 @app.route('/producto/marca', methods=['POST'])
 def post_marca():
@@ -111,6 +119,10 @@ def get_user():
 def put_user(id):
     data = request.get_json()
     return actualizar_user(conexion, data, id)
+
+@app.route('/producto/marca', methods=['GET'])
+def get_marca():
+    return producto.lista_marcas(conexion)
 
 if __name__ == '__main__':
     load_dotenv()

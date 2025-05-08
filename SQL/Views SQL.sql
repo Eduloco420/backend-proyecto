@@ -54,3 +54,67 @@ WHERE 	p.productoActive = 1 AND
             WHERE i2.producto = p.id
         ) OR i.id IS NULL)
 );
+
+CREATE OR REPLACE VIEW v_detalle_producto_1 AS (
+	SELECT 	p.id,
+			p.nomProducto,
+			p.descProducto,
+			p.subCatProducto,
+			sc.nomSubCategoria,
+			sc.categoria,
+			c.nomCategoria,
+			p.marcaProducto,
+			m.nomMarca,
+            p.despachoDomicilio,
+            p.retiroSucursal,
+            p.opcion
+	FROM productos p
+	JOIN subcategoria sc ON (p.subCatProducto = sc.id)
+	JOIN categoria c ON (sc.categoria = c.id)
+	JOIN marca m ON (p.marcaProducto = m.id)
+);
+
+CREATE OR REPLACE VIEW v_detalle_producto_2 AS (
+	SELECT 	producto, 
+			nombreEspecificacion, 
+            valorEspecificacion 
+	FROM especificacionproducto 
+);
+
+CREATE OR REPLACE VIEW v_detalle_producto_3 AS (
+	SELECT 	op.id,
+			op.producto,
+			op.glosaOpcion,
+			sum(stock)
+	FROM opcionproducto op
+	INNER JOIN inventario i
+	ON (op.id = i.producto)
+	GROUP BY op.id,
+			op.producto,
+			op.glosaOpcion,
+			op.opcionActiva
+);
+
+CREATE OR REPLACE VIEW v_subcategorias AS (
+	SELECT 	sc.id,
+			sc.nomSubCategoria,
+			sc.categoria,
+			c.nomCategoria
+	FROM subcategoria sc
+	INNER JOIN categoria c
+	ON (sc.categoria = c.id)
+);
+
+CREATE OR REPLACE VIEW v_ventas AS (
+	SELECT 	v.id,
+			COALESCE(u.rutUsuario, ci.rutClienteInv) as 'Rut Cliente',
+			COALESCE(concat(u.nomUsuario, ' ' ,u.apeUsuario   ), concat(ci.nomClienteInv, ' ', apeClienteInv  )) as 'Nombre Cliente',
+			COALESCE(u.mailUsuario, ci.mailClienteInv ) as 'Mail Cliente',
+			v.fecVenta,
+			v.estadoVenta,
+			ev.glosaEstadoVta
+	FROM venta v
+	LEFT JOIN usuario u ON (v.cliente = u.id)
+	LEFT JOIN clienteinvitado ci ON (v.clienteInvitado = ci.id)
+	LEFT JOIN estadoventa ev ON (v.estadoventa = ev.id)
+);

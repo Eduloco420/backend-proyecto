@@ -1,6 +1,6 @@
-CREATE SCHEMA multiShop;
+CREATE SCHEMA easycommerce;
 
-USE multiShop;
+USE easycommerce;
 
 CREATE TABLE `tienda` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
