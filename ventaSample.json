@@ -1,0 +1,25 @@
+{
+    "productos":[
+        {"producto":"","opcion":"", "cant":""}
+    ],
+    "cliente":null,
+    "clienteInvitado":{
+        "rutCliente":"",
+        "nomCliente":"",
+        "apeCliente":"",
+        "mailCliente":""
+    },
+        "pago":{
+        "nroTarjeta":"",
+        "fecVenTarjeta":"",
+        "cvv":"",
+        "monto":""
+    },
+    "despacho": {
+        "calleDespacho":"",
+        "numeroCalleDespacho":"",
+        "comunaDespacho":""
+    },
+    "retiro":true,
+    "sucursal":"" 
+}

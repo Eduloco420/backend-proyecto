@@ -1,0 +1,656 @@
+{
+	"info": {
+		"_postman_id": "2826bb20-69de-4d08-b8eb-c222a3e63192",
+		"name": "Proyecto Portafolio",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34749299"
+	},
+	"item": [
+		{
+			"name": "Autenticacion",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mail\":\"b.eduardo2003@outlook.com\",\r\n    \"password\":\"peneloco123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:5000/login",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verificar Token",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywicnV0VXN1YXJpbyI6IjEyMzQ1NjctOSIsIm5vbVVzdWFyaW8iOiJNb3J0eSIsImFwZVVzdWFyaW8iOiJTZXhvIiwibWFpbFVzdWFyaW8iOiJiLmVkdWFyZG8yMDAzQG91dGxvb2suY29tIiwicm9sVXN1YXJpbyI6MiwicGFzc1VzdWFyaW8iOiIkMmIkMTIkWHRRZjZQSS9aY2tXREJjUUQva2pIZW8wN1dpSmNwN3R2YXFDdEx5dUdWWjdsWjJ6bTljbHkiLCJmZWNDcmVhY2lvblVzdWFyaW8iOiIyMDI1LTA0LTA5IDIzOjE0OjIyIiwiYWN0aXZlVXN1YXJpbyI6MSwiZXhwIjoxNzQ2NTc0NjkzfQ.6erxuIHhOVBKGl8Ni9BdXprS6WkTelZX2CLV2GXERQ0",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "127.0.0.1:5000/verify/token",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"verify",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Registro",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"rut\":\"11111111-1\",\r\n    \"nombre\":\"Benjamin\",\r\n    \"apellido\":\"Aceituno\",\r\n    \"mail\":\"benjamin.aceituno@mail.udp.cl\",\r\n    \"rol\":2,\r\n    \"password\":\"password123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:5000/register",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ver usuarios",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1:5000/usuarios?rut=21292833-k",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"usuarios"
+							],
+							"query": [
+								{
+									"key": "rut",
+									"value": "21292833-k"
+								},
+								{
+									"key": "mail",
+									"value": "b.eduardo2003@outlook.com",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cambiar contraseña",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"usuario\":7,\r\n    \"password\":\"contraseña1234\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:5000/recuperar/cambiar",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"recuperar",
+								"cambiar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mail recuperar contraseña",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"email\":\"b.eduardo2003@outlook.com\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:5000/recuperar/mail",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"recuperar",
+								"mail"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Productos",
+			"item": [
+				{
+					"name": "Lista Productos",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1:5000/producto?pagina=1&search=iphone",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"producto"
+							],
+							"query": [
+								{
+									"key": "pagina",
+									"value": "1",
+									"description": "buscar paginado"
+								},
+								{
+									"key": "search",
+									"value": "iphone",
+									"description": "Barra de busqueda (REQUIERE KEY PAGINA)"
+								},
+								{
+									"key": "subcategoria",
+									"value": "5",
+									"description": "Para buscar por ID subcategoria (REQUIERE KEY PAGINA)",
+									"disabled": true
+								},
+								{
+									"key": "categoria",
+									"value": "3",
+									"description": "Para buscar por ID categoria (REQUIERE KEY PAGINA)",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Producto",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "data",
+									"value": "{\n    \"nomProducto\":\"iPhone 15 pro max\",\n    \"descProducto\":\"iPhone 15 pro max Nuevo\",\n    \"subCategoria\":\"2\",\n    \"marca\":\"3\",\n    \"opcion\":\"Color\",\n    \"retiroSucursal\":\"1\",\n    \"despachoDomicilio\":\"1\",\n    \"precio\":\"999990\",\n    \"especificaciones\":[\n        {\n            \"nombre\":\"Almacenamiento\",\n            \"valor\":\"256 gb\"\n        },\n        {\n            \"nombre\":\"bateria\",\n            \"valor\":\"4.400 mAh\"\n        }\n    ],\n    \"stock\":[\n        {\n            \"opcion\":\"Negro\",\n            \"cantidad\":[\n                {\"sucursal\":\"1\",\"cant\":\"10\"},\n                {\"sucursal\":\"2\",\"cant\":\"15\"}\n            ]\n            \n        },\n        {\n            \"opcion\":\"Azul\",\n            \"cantidad\":[\n                {\"sucursal\":\"1\",\"cant\":\"5\"},\n                {\"sucursal\":\"2\",\"cant\":\"10\"}\n            ]\n            \n        },\n        {\n            \"opcion\":\"Plateado\",\n            \"cantidad\":[\n                {\"sucursal\":\"2\",\"cant\":\"10\"}\n            ]\n        }\n    ]\n}",
+									"type": "text"
+								},
+								{
+									"key": "imagenes",
+									"type": "file",
+									"src": "/D:/Users/Eduardo/Descargas/iphone-15-pro-max.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "127.0.0.1:5000/producto",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"producto"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear marca",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"marca\":\"Fifine\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:5000/producto/marca",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"producto",
+								"marca"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear subcategoria",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"subcategoria\":\"Accesorios\",\r\n    \"categoria\":3\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:5000/producto/subcategoria",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"producto",
+								"subcategoria"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear categoria",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"categoria\":\"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:5000/producto/categoria",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"producto",
+								"categoria"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Imagen",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1:5000/uploads/10_75512c39883044859a6256bf790b80cb.jpg",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"uploads",
+								"10_75512c39883044859a6256bf790b80cb.jpg"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Detalle Producto",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1:5000/producto/29",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"producto",
+								"29"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ver subcategorias",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:5000/producto/subcategoria",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"producto",
+								"subcategoria"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ver categorias",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1:5000/producto/categoria",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"producto",
+								"categoria"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ver marcas",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "127.0.0.1:5000/producto/marca",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"producto",
+								"marca"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sucursal",
+			"item": [
+				{
+					"name": "Crear Sucursal",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nomSucursal\":\"Tienda La Florida\",\r\n    \"direccion\":\"Vicuña Mackenna 9101\",\r\n    \"comuna\":109,\r\n    \"tipoSucursal\":2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:5000/sucursal",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"sucursal"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lista Sucursales",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "127.0.0.1:5000/sucursal",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"sucursal"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Ventas",
+			"item": [
+				{
+					"name": "Ingresar Venta",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"productos\":[\r\n        {\"producto\":\"29\",\"opcion\":\"43\", \"cant\":\"1\"}\r\n    ],\r\n    \"cliente\":7,\r\n    \"clienteInvitado\":{\r\n        \"rutCliente\":null,\r\n        \"nomCliente\":null,\r\n        \"apeCliente\":null,\r\n        \"mailCliente\":null\r\n    },\r\n    \"pago\":{\r\n        \"nroTarjeta\":\"1234768593021745\",\r\n        \"fecVenTarjeta\":\"02/28\",\r\n        \"cvv\":\"655\",\r\n        \"monto\":\"800000\"\r\n    },\r\n    \"despacho\": {\r\n        \"calleDespacho\":\"Av. Vicuña Mackenna\",\r\n        \"numeroCalleDespacho\":\"9000\",\r\n        \"comunaDespacho\":\"109\"\r\n    },\r\n    \"sucursal\":\"2\" \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:5000/venta",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"venta"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

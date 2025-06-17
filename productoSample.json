@@ -1,0 +1,44 @@
+{
+    "nomProducto":"iPhone 15 pro max",
+    "descProducto":"iPhone 15 pro max Nuevo",
+    "subCategoria":"2",
+    "marca":"3",
+    "opcion":"Color",
+    "retiroSucursal":"1",
+    "despachoDomicilio":"1",
+    "precio":"999990",
+    "especificaciones":[
+        {
+            "nombre":"Almacenamiento",
+            "valor":"256 gb"
+        },
+        {
+            "nombre":"bateria",
+            "valor":"4.400 mAh"
+        }
+    ],
+    "stock":[
+        {
+            "opcion":"Negro",
+            "cantidad":[
+                {"sucursal":"1","cant":"10"},
+                {"sucursal":"2","cant":"15"}
+            ]
+            
+        },
+        {
+            "opcion":"Azul",
+            "cantidad":[
+                {"sucursal":"1","cant":"5"},
+                {"sucursal":"2","cant":"10"}
+            ]
+            
+        },
+        {
+            "opcion":"Plateado",
+            "cantidad":[
+                {"sucursal":"2","cant":"10"}
+            ]
+        }
+    ]
+}
