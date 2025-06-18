@@ -114,6 +114,7 @@ for i in datos:
         print(f"Producto {i[0]} tiene {i[13]} opciones")            
         productos.append(producto)
 
+
 * en def ver_producto(con, prod):
 
 reemplacé esto:
@@ -267,3 +268,51 @@ ALTER TABLE pago ADD COLUMN tipoTarjeta VARCHAR(20);
 ALTER TABLE pago ADD COLUMN authorizationCode VARCHAR(20);
 
 
+=============================================== Cambios para integrar WebPay:
+Views sql.sql
+
+Modifiqué dos lineas aqui:
+
+CREATE OR REPLACE VIEW v_producto_lista AS (
+	SELECT 	p.id AS idProducto,
+		p.nomProducto,
+        c.id as 'idCategoria',
+		p.marcaProducto as 'idMarca',
+		p.subCatProducto as 'idSubCategoria',
+		c.nomCategoria,
+		sc.nomSubCategoria,
+		m.nomMarca,
+		vp.valorProducto as 'valorOriginal',
+        round(vp.valorProducto * (1 - dp.porcDescuento / 100), 0) as 'valorOferta' -- MODIFIQUÉ ESTA LÍNEA PARA MOSTRAR BIEN EL DESCUENTO - KARLA
+		i.imagen,
+        p.despachoDomicilio,
+        p.retiroSucursal,
+		(SELECT COUNT(*) FROM opcionproducto op WHERE op.producto = p.id AND op.opcionActiva = 1) as 'cantidadOpciones' --Agregué esta línea para poder saber si un producto tiene más de una opcion en el ProductCard.
+
+FROM productos p
+	JOIN valorProducto vp ON p.id = vp.producto
+	JOIN subCategoria sc ON p.subCatProducto = sc.id
+	JOIN categoria c ON sc.categoria = c.id
+	JOIN marca m ON p.marcaProducto = m.id
+	LEFT JOIN imagenProducto i ON p.id = i.producto
+    LEFT JOIN descuentoProducto dp ON dp.id =  (
+			SELECT dp2.id
+			FROM descuentoProducto dp2
+            WHERE dp2.producto = p.id
+            AND (dp2.fecInicVigDescuento <= NOW() 
+            AND dp2.fecTermVigDescuento >= NOW())
+            ORDER BY dp2.fecInicVigDescuento DESC
+			LIMIT 1
+		)
+WHERE 	p.productoActive = 1 AND
+		vp.fecInicVigValor = (
+			SELECT MAX(vp2.fecInicVigValor)
+			FROM valorProducto vp2
+			WHERE vp2.producto = p.id AND vp2.fecInicVigValor <= now()
+		) AND
+		(i.id = (
+			SELECT MIN(id)
+            FROM imagenProducto i2
+            WHERE i2.producto = p.id
+        ) OR i.id IS NULL)
+);

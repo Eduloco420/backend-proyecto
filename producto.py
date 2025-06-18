@@ -120,7 +120,7 @@ def lista_productos(con, pagina, categoria, subcategoria,search):
         sql = 'SELECT * FROM v_producto_lista where LOWER(nomProducto) like %s LIMIT %s OFFSET %s'
         cursor.execute(sql, (f"%{search.lower()}%", cant_prod, offset))
     else:    
-        sql = 'SELECT * FROM v_producto_lista'
+        sql = 'SELECT * FROM v_producto_lista' 
         cursor.execute(sql)
         total_pag = 0
         pagina = 0 
@@ -150,7 +150,6 @@ def lista_productos(con, pagina, categoria, subcategoria,search):
     response.status_code = 200
     return response
 
-"""
 def lista_productos_ofertas(con, pagina):
     cant_prod = 12
     offset = (pagina - 1) * cant_prod
@@ -189,7 +188,6 @@ def lista_productos_ofertas(con, pagina):
                         'Productos':productos})
     response.status_code = 200
     return response
-"""
 
 def ver_producto(con, prod):
     cursor = con.connection.cursor()

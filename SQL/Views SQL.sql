@@ -23,7 +23,7 @@ CREATE OR REPLACE VIEW v_producto_lista AS (
 		sc.nomSubCategoria,
 		m.nomMarca,
 		vp.valorProducto as 'valorOriginal',
-        round((vp.valorProducto * (dp.porcDescuento / 100)),0) as 'valorOferta',
+        round(vp.valorProducto * (1 - dp.porcDescuento / 100), 0) as 'valorOferta' -- MODIFIQUÉ ESTA LÍNEA PARA MOSTRAR BIEN EL DESCUENTO - KARLA
 		i.imagen,
         p.despachoDomicilio,
         p.retiroSucursal,
