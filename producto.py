@@ -15,6 +15,18 @@ def crear_categoria(con, data):
 
 def eliminar_categoria(con, categoria):
     cursor = con.connection.cursor()
+    
+def editar_categoria(con, data, id):
+    nombre = data['nombre'],
+    
+    cursor = con.connection.cursor()
+    sql = "UPDATE categoria SET nomCategoria = %s WHERE id = %s"
+    cursor.execute(sql, (nombre, id))
+    con.connection.commit()
+    cursor.close()
+    response = jsonify({'mensaje':'Categoría modificada correctamente'})
+    response.status_code = 200
+    return response
 
 def crear_subcategoria(con, data):
     subcategoria = data['subcategoria']
@@ -24,6 +36,18 @@ def crear_subcategoria(con, data):
     cursor.execute(sql, (subcategoria,categoria))
     con.connection.commit()
     response = jsonify({'mensaje':'Subcategoria creada con exito'})
+    response.status_code = 200
+    return response
+
+def editar_subcategoria(con, data, id):
+    nombre = data['nombre'],
+    categoria = data['categoria']
+    cursor = con.cursor.cursor()
+    sql = "UPDATE subcategoria SET nomsubcategoria = %s, categoria = %s WHERE id = %s"
+    cursor.execute(sql, (nombre, categoria, id))
+    con.connection.commit()
+    cursor.close()
+    response = jsonify({'mensaje':'Subcategoria modificada correctamente'})
     response.status_code = 200
     return response
     
@@ -120,7 +144,7 @@ def lista_productos(con, pagina, categoria, subcategoria,search):
         sql = 'SELECT * FROM v_producto_lista where LOWER(nomProducto) like %s LIMIT %s OFFSET %s'
         cursor.execute(sql, (f"%{search.lower()}%", cant_prod, offset))
     else:    
-        sql = 'SELECT * FROM v_producto_lista' 
+        sql = 'SELECT * FROM v_producto_lista'
         cursor.execute(sql)
         total_pag = 0
         pagina = 0 
@@ -220,7 +244,7 @@ def ver_producto(con, prod):
         stock = {'idOpcion': s[0], # <-- FALTABA AGREGAR ESTA LÍNEA, para que el cliente pueda elegir una opcion
                 'glosaOpcion':s[2],
                 'cantStock':s[3]}
-        stocks.append(stock)    
+        stocks.append(stock)
         
     sqlImagen = 'SELECT imagen FROM imagenproducto WHERE producto = %s'
     cursor.execute(sqlImagen, (prod, ))

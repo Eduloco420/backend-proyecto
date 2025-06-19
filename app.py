@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from login import routes_auth
 from db import app, get_db
 import producto, sucursal, ventas
-from register import registrar, recuperar_contraseña, cambiar_contraseña, ver_usuario, actualizar_user
+from register import registrar, recuperar_contraseña, cambiar_contraseña, ver_usuario, actualizar_user, activar_usuario
 import json
 from flask_cors import CORS
 
@@ -38,6 +38,11 @@ def post_categoria():
     data = request.get_json()
     return producto.crear_categoria(conexion, data)
 
+@app.route('/producto/categoria/<int:id>', methods=['PUT'])
+def put_categoria(id):
+    data = request.get_json()
+    return producto.editar_categoria(conexion, data, id)
+
 @app.route('/producto/categoria', methods=['GET'])
 def get_categoria():
     return producto.lista_categoria(conexion)
@@ -46,6 +51,11 @@ def get_categoria():
 def post_subcategoria():
     data = request.get_json()
     return producto.crear_subcategoria(conexion, data)
+
+@app.route('/producto/subcategoria/<int:id>', methods=['PUT'])
+def put_subcategoria(id):
+    data = request.get_json()
+    return producto.editar_subcategoria(conexion, data, id)
 
 @app.route('/producto/subcategoria', methods=['GET'])
 def get_subcategoria():
@@ -148,7 +158,6 @@ def put_user(id):
     data = request.get_json()
     return actualizar_user(conexion, data, id)
 
-# NUEVO-AGREGADO POR KARLA
 @app.route('/usuarios/<int:id>', methods=['GET'])
 def get_user_by_id(id):
     cursor = conexion.connection.cursor()
@@ -180,7 +189,17 @@ def get_user_by_id(id):
 def get_marca():
     return producto.lista_marcas(conexion)
 
+@app.route('/usuarios/activar/<int:id>', methods=['PUT'])
+def active_user(id):
+    return activar_usuario(conexion, id)
 
+@app.route('/pagos/<int:id>', methods=['GET'])
+def get_pagos(id):
+    return ventas.ver_pagos(conexion, id)
+
+@app.route('/ventas', methods=['GET'])
+def get_ventas():
+    return ventas.ver_ventas(conexion)
 
 if __name__ == '__main__':
     load_dotenv()
