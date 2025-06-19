@@ -1,7 +1,11 @@
 INSERT INTO rolusuario VALUES (1, 'Cliente');
 INSERT INTO rolusuario VALUES (2, 'Administrador');
 
-INSERT INTO tienda VALUES (1, 'Tienda Prueba', null, null, null, 'localhost:8080');
+INSERT INTO tiposucursal VALUES 
+(1, 'Bodega'),
+(2, 'Tienda');
+
+INSERT INTO tienda VALUES (1, 'Tienda Prueba', null, null, null, 'http://localhost:8080');
 
 INSERT INTO estadoVenta VALUES 
 ('1','Pendiente'),

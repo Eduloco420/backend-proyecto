@@ -74,3 +74,50 @@ def ingresar_venta(con, data):
         response.status_code = 400
         return response
 
+def ver_ventas(con):
+    try:
+        cursor = con.connection.cursor()
+        sql = "SELECT * FROM v_ventas"
+        cursor.execute(sql)
+        datos = cursor.fetchall()
+        ventas = []
+        for d in datos:
+            venta = {'id':d[0],
+                    'rut':d[1],
+                    'nombre':d[2],
+                    'mail':d[3],
+                    'fecVenta':d[4].strftime("%d-%m-%Y %H:%M"),
+                    'estadoVenta':d[5],
+                    'glosaEstadoVenta':d[6]}
+            ventas.append(venta)
+        response = jsonify({'Mensaje':'Datos obtenidos correctamente', 'Ventas':ventas})
+        response.status_code = 200
+        return response
+    except Exception as e:
+        response = jsonify({'mensaje':'Error al recuperar datos', 'Error':str(e)})
+        response.status_code = 500
+        return response
+
+def ver_pagos(con, venta):
+    try:
+        cursor = con.connection.cursor()
+        sql = "SELECT * FROM v_pagos where venta = %s"
+        cursor.execute(sql, (venta, ))
+        datos = cursor.fetchall()
+
+        pagos = []
+        for d in datos:
+            pago = {'id':d[0],
+                    'venta':d[1],
+                    'nroTarjeta':d[2],
+                    'MontoPago':d[3],
+                    'estadoPago':d[4],
+                    'glosaEstadoPago':d[5]}
+            pagos.append(pago)
+        response = jsonify({'mensaje':'Datos conseguidos correctamente','Pagos':pagos})        
+        response.status_code = 200
+        return response
+    except Exception as e:
+        response = jsonify({'mensaje':'Error al recuperar datos', 'Error':str(e)})
+        response.status_code = 500
+        return response

@@ -13,8 +13,17 @@ def crear_categoria(con, data):
     response.status_code = 200
     return response
 
-def eliminar_categoria(con, categoria):
+def editar_categoria(con, data, id):
+    nombre = data['nombre'],
+    
     cursor = con.connection.cursor()
+    sql = "UPDATE categoria SET nomCategoria = %s WHERE id = %s"
+    cursor.execute(sql, (nombre, id))
+    con.connection.commit()
+    cursor.close()
+    response = jsonify({'mensaje':'Categoría modificada correctamente'})
+    response.status_code = 200
+    return response
 
 def crear_subcategoria(con, data):
     subcategoria = data['subcategoria']
@@ -24,6 +33,18 @@ def crear_subcategoria(con, data):
     cursor.execute(sql, (subcategoria,categoria))
     con.connection.commit()
     response = jsonify({'mensaje':'Subcategoria creada con exito'})
+    response.status_code = 200
+    return response
+
+def editar_subcategoria(con, data, id):
+    nombre = data['nombre'],
+    categoria = data['categoria']
+    cursor = con.cursor.cursor()
+    sql = "UPDATE subcategoria SET nomsubcategoria = %s, categoria = %s WHERE id = %s"
+    cursor.execute(sql, (nombre, categoria, id))
+    con.connection.commit()
+    cursor.close()
+    response = jsonify({'mensaje':'Subcategoria modificada correctamente'})
     response.status_code = 200
     return response
     

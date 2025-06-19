@@ -124,7 +124,7 @@ def recuperar_contraseña(con, data):
         msg = MIMEMultipart()
         msg["From"] = remitente
         msg["To"] = mail
-        msg["Subject"] = "Confirmación de Registro"
+        msg["Subject"] = "Cambio de contraseña"
 
         cuerpo = f"""
         Hola {nombre} {apellido},
@@ -249,3 +249,39 @@ def actualizar_user(con, data, id):
     response = jsonify({'mensaje':'Se han actualizado los datos'})
     response.status_code = 200
     return response
+
+def activar_usuario(con, usuario):
+    cursor = con.connection.cursor()
+    con.connection.begin()
+    sqlUsuario = "SELECT activeUsuario FROM usuario WHERE id =  %s"
+    sqlUpdate = "UPDATE usuario SET activeUsuario = 1 WHERE id = %s"
+
+    try:
+        cursor.execute(sqlUsuario, (usuario, ))
+        datos = cursor.fetchone()
+        
+        if datos is None:
+            response = jsonify({'mensaje':'No se encontro ningun usuario para activar'})
+            response.status_code = 200
+            return response
+
+        if  datos[0] == 1:
+            response = jsonify({'mensaje':'Usuario ya se encuentra activo'})
+            response.status_code = 200
+            return response
+        
+        cursor.execute(sqlUpdate, (usuario, ))
+        con.connection.commit()
+
+        if cursor.rowcount == 0:
+            response = jsonify({'mensaje':'No se activó ningun usuario'})
+            response.status_code = 404
+            return response
+        
+        response = jsonify({'mensaje':'Usuario activado correctamente'})
+        response.status_code = 200
+        return response
+    except Exception as e:
+        response = jsonify({'mensaje':'Error a la hora de activar', 'error':str(e)})
+        response.status_code = 500
+        return response
