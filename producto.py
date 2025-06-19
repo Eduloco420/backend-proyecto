@@ -13,6 +13,9 @@ def crear_categoria(con, data):
     response.status_code = 200
     return response
 
+def eliminar_categoria(con, categoria):
+    cursor = con.connection.cursor()
+    
 def editar_categoria(con, data, id):
     nombre = data['nombre'],
     
@@ -160,9 +163,50 @@ def lista_productos(con, pagina, categoria, subcategoria,search):
                     'valorOferta':i[9],
                     'imagen':i[10],
                     'despacho':i[11],
-                    'retiro':i[12]}
+                    'retiro':i[12],
+                    'cantidadOpciones':i[13]}  #Agregué esto para poder saber si mostrar botón "Agregar al Carrito o "Ver Opciones" 
+        print(f"Producto {i[0]} tiene {i[13]} opciones")            
         productos.append(producto)
     response = jsonify({'mensaje':'Listado Extraido correctamente',
+                        'paginaActual': pagina,
+                        'paginasTotal': total_pag,
+                        'Productos':productos})
+    response.status_code = 200
+    return response
+
+def lista_productos_ofertas(con, pagina):
+    cant_prod = 12
+    offset = (pagina - 1) * cant_prod
+    cursor = con.connection.cursor()
+    
+    # Solo productos donde valorOferta IS NOT NULL y es menor que valorOriginal
+    cursor.execute("SELECT count(idProducto) FROM v_producto_lista WHERE valorOferta IS NOT NULL AND valorOferta < valorOriginal")
+    total_prod = cursor.fetchone()[0]
+    total_pag = int(math.ceil(total_prod/cant_prod))
+    
+    sql = 'SELECT * FROM v_producto_lista WHERE valorOferta IS NOT NULL AND valorOferta < valorOriginal LIMIT %s OFFSET %s'
+    cursor.execute(sql, (cant_prod, offset))
+    
+    datos = cursor.fetchall()
+    productos = []
+    for i in datos:
+        producto = {'idProducto':i[0],
+                    'nomProducto':i[1],
+                    'idCategoria':i[2],
+                    'idMarca':i[3],
+                    'idSubCategoria':i[4],
+                    'nomCategoria':i[5],
+                    'nomSubCategoria':i[6],
+                    'nomMarca':i[7],
+                    'valorOriginal':i[8],
+                    'valorOferta':i[9],
+                    'imagen':i[10],
+                    'despacho':i[11],
+                    'retiro':i[12],
+                    'cantidadOpciones':i[13]}
+        productos.append(producto)
+        
+    response = jsonify({'mensaje':'Ofertas obtenidas correctamente',
                         'paginaActual': pagina,
                         'paginasTotal': total_pag,
                         'Productos':productos})
@@ -190,10 +234,17 @@ def ver_producto(con, prod):
     stockData = cursor.fetchall()
     stocks = []
 
+    """
     for s in stockData:
         stock = {'glosaOpcion':s[2],
                  'cantStock':s[3]}
-        stocks.append(stock)    
+        stocks.append(stock)
+    """
+    for s in stockData:
+        stock = {'idOpcion': s[0], # <-- FALTABA AGREGAR ESTA LÍNEA, para que el cliente pueda elegir una opcion
+                'glosaOpcion':s[2],
+                'cantStock':s[3]}
+        stocks.append(stock)
         
     sqlImagen = 'SELECT imagen FROM imagenproducto WHERE producto = %s'
     cursor.execute(sqlImagen, (prod, ))
@@ -203,6 +254,18 @@ def ver_producto(con, prod):
     for i in imagenData:
         imagen = {'imagen':i[0]}
         imagenes.append(imagen) 
+    
+    # Consulta para obtener precio
+    sqlPrecio = """
+    SELECT valorProducto 
+    FROM valorProducto 
+    WHERE producto = %s
+    ORDER BY fecInicVigValor DESC
+    LIMIT 1
+    """
+    cursor.execute(sqlPrecio, (prod,))
+    precioData = cursor.fetchone()
+    precio = precioData[0] if precioData else None
 
     producto = {'id':productoData[0],
                 'nombre':productoData[1],
@@ -215,10 +278,12 @@ def ver_producto(con, prod):
                 'marca':productoData[8],
                 'despacho':bool(productoData[9]),
                 'retiro':bool(productoData[10]),
-                'opcion':productoData[11],
+                'opcion': productoData[11],
+                'precio': precio,
                 'especificaciones': especs,
-                'stock':stocks,
-                'imagenes':imagenes}
+                'stock': stocks,
+                'imagenes': imagenes
+            }
     response = jsonify({'mensaje':'Ok', 'producto':producto})
     response.status_code = 200
     return response

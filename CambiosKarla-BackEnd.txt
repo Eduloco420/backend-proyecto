@@ -1,0 +1,318 @@
+backend-proyecto-master\uploads --> Tengo todas las imágenes e los productos en archivos .png y .jpg
+
+===============================================
+app.py:
+
+@app.route('/producto/ofertas', methods=['GET'])
+def get_ofertas():
+    pagina = int(request.args.get('pagina', 1))
+    return producto.lista_productos_ofertas(conexion, pagina)
+
+
+@app.route('/activar-usuario/<int:id>', methods=['PUT']) 
+def activar_usuario(id):
+    try:
+        cursor = conexion.connection.cursor()
+        sql = 'UPDATE usuario SET activeUsuario = 1 WHERE id = %s AND activeUsuario = 0'
+        cursor.execute(sql, (id,))
+        conexion.connection.commit()
+        
+        if cursor.rowcount > 0:
+            response = jsonify({'mensaje': 'Cuenta activada exitosamente'})
+            response.status_code = 200
+            return response
+        else:
+            response = jsonify({'mensaje': 'Usuario no encontrado o ya está activo'})
+            response.status_code = 400
+            return response
+    except Exception as e:
+        response = jsonify({'mensaje': 'Error al activar cuenta', 'error': str(e)})
+        response.status_code = 500
+        return response
+
+
+@app.route('/usuarios/<int:id>', methods=['GET'])
+def get_user_by_id(id):
+    cursor = conexion.connection.cursor()
+    sql = "SELECT id, rutUsuario, nomUsuario, apeUsuario, mailUsuario, rolUsuario, activeUsuario FROM usuario WHERE id = %s"
+    cursor.execute(sql, (id,))
+    
+    datos = cursor.fetchone()
+    
+    if datos:
+        usuario = {
+            'id': datos[0],
+            'rut': datos[1],
+            'nombre': datos[2],
+            'apellido': datos[3],
+            'mail': datos[4],
+            'rol': datos[5],
+            'activo': datos[6]
+        }
+        
+        response = jsonify({'mensaje': 'Usuario encontrado', 'usuario': usuario})
+        response.status_code = 200
+        return response
+    else:
+        response = jsonify({'mensaje': 'Usuario no encontrado'})
+        response.status_code = 404
+        return response
+
+
+===============================================
+db.py:
+
+from flask_mysqldb import MySQL
+from flask import Flask
+from flask_cors import CORS
+from config import config
+
+app = Flask(__name__)
+app.config.from_object(config['development'])
+
+CORS(app, origins=[
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+])
+
+conexion = MySQL(app)  # Conexión a la base de datos
+
+def get_db():
+    return conexion
+
+===============================================
+producto.py:
+
+* en def lista_productos(con, pagina, categoria, subcategoria,search):
+
+agregué estas lineas dentro del for:
+
+'cantidadOpciones':i[13]}  #Agregué esto para poder saber si mostrar botón "Agregar al Carrito o "Ver Opciones" 
+        print(f"Producto {i[0]} tiene {i[13]} opciones")      
+
+se ve asi:
+
+for i in datos:
+        producto = {'idProducto':i[0],
+                    'nomProducto':i[1],
+                    'idCategoria':i[2],
+                    'idMarca':i[3],
+                    'idSubCategoria':i[4],
+                    'nomCategoria':i[5],
+                    'nomSubCategoria':i[6],
+                    'nomMarca':i[7],
+                    'valorOriginal':i[8],
+                    'valorOferta':i[9],
+                    'imagen':i[10],
+                    'despacho':i[11],
+                    'retiro':i[12],
+                    'cantidadOpciones':i[13]}  #Agregué esto para poder saber si mostrar botón "Agregar al Carrito o "Ver Opciones" 
+        print(f"Producto {i[0]} tiene {i[13]} opciones")            
+        productos.append(producto)
+
+
+* en def ver_producto(con, prod):
+
+reemplacé esto:
+
+for s in stockData:
+        stock = {'glosaOpcion':s[2],
+                 'cantStock':s[3]}
+        stocks.append(stock)
+
+por esto:
+
+for s in stockData:
+        stock = {'idOpcion': s[0], # <-- FALTABA AGREGAR ESTA LÍNEA, para que el cliente pueda elegir una opcion
+                'glosaOpcion':s[2],
+                'cantStock':s[3]}
+        stocks.append(stock)
+
+Después de este for: 
+
+for i in imagenData:
+        imagen = {'imagen':i[0]}
+        imagenes.append(imagen) 
+
+Agregué esto:
+
+# Consulta para obtener precio
+    sqlPrecio = """
+    SELECT valorProducto 
+    FROM valorProducto 
+    WHERE producto = %s
+    ORDER BY fecInicVigValor DESC
+    LIMIT 1
+    """
+    cursor.execute(sqlPrecio, (prod,))
+    precioData = cursor.fetchone()
+    precio = precioData[0] if precioData else None
+
+    producto = {'id':productoData[0],
+                'nombre':productoData[1],
+                'descripcion':productoData[2],
+                'subcategoriaId':productoData[3],
+                'subcategoria':productoData[4],
+                'categoriaId':productoData[5],
+                'categoria':productoData[6],
+                'marcaId':productoData[7],
+                'marca':productoData[8],
+                'despacho':bool(productoData[9]),
+                'retiro':bool(productoData[10]),
+                'opcion': productoData[11],
+                'precio': precio,  # AQUÍ agregué el precio
+                'especificaciones': especs,
+                'stock': stocks,
+                'imagenes': imagenes
+            }
+
+===============================================
+register.py:
+
+* en def enviar_correo(destinatario, nombre, apellido, dominio):
+
+Usuario}
+
+    (Si se abre una nueva pestaña, puedes cerrar la anterior)
+
+    Este enlace expirará en 24 horas por seguridad.
+
+    Si no solicitaste esta cuenta, puedes ignorar este correo.
+
+    Saludos,
+    Equipo MultiShop
+    """
+    msg.attach(MIMEText(cuerpo, "plain"))
+
+    try:
+        servidor = smtplib.SMTP(servidor_smtp, puerto)
+        servidor.starttls()
+        servidor.login(remitente, password)
+        servidor.sendmail(remitente, destinatario, msg.as_string())
+        servidor.quit()
+        print("Correo enviado con éxito")
+    except Exception as e:
+        print(f"Error enviando correo: {str(e)}")
+
+* en def registrar(con, data):
+    rut = data['rut']
+    nombre = data['nombre']
+    apellido = data['apellido']
+    mail = data['mail']
+    rol = data['rol']
+    password = data['password']
+
+    try:
+
+        hashedPassword = hash_password(password)
+
+        con.connection.begin()
+        cursor = con.connection.cursor()
+        sql = ('INSERT INTO usuario (rutUsuario, nomUsuario, apeUsuario, mailUsuario, rolUsuario, passUsuario, fecCreacionUsuario, activeUsuario) VALUES (%s, %s, %s, %s, %s, %s, now(), false);')
+        cursor.execute(sql, (rut,nombre,apellido,mail,rol,hashedPassword))
+        idUsuario = cursor.lastrowid  # OBTIENE EL ID DEL USUARIO RECIÉN CREADO - KARLA
+
+        con.connection.commit()
+        sql = 'SELECT dominioTienda from tienda'
+        cursor.execute(sql)
+        dominio = cursor.fetchone()[0]
+        enviar_correo(destinatario=mail, nombre=nombre, apellido=apellido, dominio=dominio, idUsuario=idUsuario)  # AGREGUÉ idUsuario - KARLA
+        response = jsonify({'mensaje':'Usuario registrado exitosamente. Revisa tu correo para activar tu cuenta.'})
+        response.status_code = 200
+        return response
+    
+    
+    except MySQLdb.IntegrityError as e:
+        if e.args[0] == 1062:
+            error_msg = str(e.args[1])
+            if 'rutUsuario' in error_msg:
+                return jsonify({'mensaje': 'El RUT ya está registrado'}), 400
+            elif 'mailUsuario' in error_msg:
+                return jsonify({'mensaje': 'El correo ya está registrado'}), 400
+            else:
+                return jsonify({'mensaje': 'Dato duplicado'}), 400
+        else:
+            return jsonify({'mensaje': 'Error de integridad', 'detalle': str(e)}), 400
+    
+    except Exception as e:
+        con.connection.rollback()
+        return jsonify({'mensaje':'Error en la creación de usuario ' + str(e)})
+
+* en def recuperar_contraseña(con, data):
+
+        cuerpo = f"""
+        Hola {nombre} {apellido},
+
+        Para recuperar tu contraseña, haz click en el siguiente enlace:
+
+        {dominio}/restablecer-password?id={idUsuario} #Cambié la URL - KARLA
+
+        Saludos,
+        Equipo MultiShop
+        """
+
+=============================================== Cambios para integrar WebPay:
+Tablas.sql
+
+-- En tabla venta
+ALTER TABLE venta ADD COLUMN numeroOrden VARCHAR(20) UNIQUE;
+ALTER TABLE venta ADD COLUMN tokenWebpay VARCHAR(64);
+
+-- En tabla pago  
+ALTER TABLE pago MODIFY nroTarjeta VARCHAR(20);
+ALTER TABLE pago ADD COLUMN tipoTarjeta VARCHAR(20);
+ALTER TABLE pago ADD COLUMN authorizationCode VARCHAR(20);
+
+
+=============================================== Cambios para integrar WebPay:
+Views sql.sql
+
+Modifiqué dos lineas aqui:
+
+CREATE OR REPLACE VIEW v_producto_lista AS (
+	SELECT 	p.id AS idProducto,
+		p.nomProducto,
+        c.id as 'idCategoria',
+		p.marcaProducto as 'idMarca',
+		p.subCatProducto as 'idSubCategoria',
+		c.nomCategoria,
+		sc.nomSubCategoria,
+		m.nomMarca,
+		vp.valorProducto as 'valorOriginal',
+        round(vp.valorProducto * (1 - dp.porcDescuento / 100), 0) as 'valorOferta' -- MODIFIQUÉ ESTA LÍNEA PARA MOSTRAR BIEN EL DESCUENTO - KARLA
+		i.imagen,
+        p.despachoDomicilio,
+        p.retiroSucursal,
+		(SELECT COUNT(*) FROM opcionproducto op WHERE op.producto = p.id AND op.opcionActiva = 1) as 'cantidadOpciones' --Agregué esta línea para poder saber si un producto tiene más de una opcion en el ProductCard.
+
+FROM productos p
+	JOIN valorProducto vp ON p.id = vp.producto
+	JOIN subCategoria sc ON p.subCatProducto = sc.id
+	JOIN categoria c ON sc.categoria = c.id
+	JOIN marca m ON p.marcaProducto = m.id
+	LEFT JOIN imagenProducto i ON p.id = i.producto
+    LEFT JOIN descuentoProducto dp ON dp.id =  (
+			SELECT dp2.id
+			FROM descuentoProducto dp2
+            WHERE dp2.producto = p.id
+            AND (dp2.fecInicVigDescuento <= NOW() 
+            AND dp2.fecTermVigDescuento >= NOW())
+            ORDER BY dp2.fecInicVigDescuento DESC
+			LIMIT 1
+		)
+WHERE 	p.productoActive = 1 AND
+		vp.fecInicVigValor = (
+			SELECT MAX(vp2.fecInicVigValor)
+			FROM valorProducto vp2
+			WHERE vp2.producto = p.id AND vp2.fecInicVigValor <= now()
+		) AND
+		(i.id = (
+			SELECT MIN(id)
+            FROM imagenProducto i2
+            WHERE i2.producto = p.id
+        ) OR i.id IS NULL)
+);

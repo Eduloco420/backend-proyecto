@@ -7,7 +7,12 @@ import os
 from dotenv import load_dotenv
 import MySQLdb
 
-def enviar_correo(destinatario, nombre, apellido, dominio):
+# ========================================
+# FUNCIÓN: Envío de correo de activación
+# USO: Llamada internamente por registrar()
+# PROPÓSITO: Enviar email con enlace de activación cuando un usuario se registra
+# ========================================
+def enviar_correo(destinatario, nombre, apellido, dominio, idUsuario):  # AGREGUÉ idUsuario - KARLA
     remitente = os.getenv('MAIL')
     password = os.getenv('MAIL_PASS')
 
@@ -42,6 +47,11 @@ def enviar_correo(destinatario, nombre, apellido, dominio):
     except Exception as e:
         print(f"Error enviando correo: {str(e)}")
 
+# ========================================
+# FUNCIÓN: Registro de nuevos usuarios
+# USO: Ruta /register (POST) - app.py línea ~20
+# PROPÓSITO: Crear usuario inactivo en BD y enviar email de activación
+# ========================================
 def registrar(con, data):
     rut = data['rut']
     nombre = data['nombre']
@@ -58,15 +68,17 @@ def registrar(con, data):
         cursor = con.connection.cursor()
         sql = ('INSERT INTO usuario (rutUsuario, nomUsuario, apeUsuario, mailUsuario, rolUsuario, passUsuario, fecCreacionUsuario, activeUsuario) VALUES (%s, %s, %s, %s, %s, %s, now(), false);')
         cursor.execute(sql, (rut,nombre,apellido,mail,rol,hashedPassword))
+        idUsuario = cursor.lastrowid  # OBTIENE EL ID DEL USUARIO RECIÉN CREADO - KARLA
 
         con.connection.commit()
         sql = 'SELECT dominioTienda from tienda'
         cursor.execute(sql)
         dominio = cursor.fetchone()[0]
-        enviar_correo(destinatario=mail, nombre=nombre, apellido=apellido, dominio=dominio)
-        response = jsonify({'mensaje':'Usuario creado con exito'})
+        enviar_correo(destinatario=mail, nombre=nombre, apellido=apellido, dominio=dominio, idUsuario=idUsuario)  # AGREGUÉ idUsuario - KARLA
+        response = jsonify({'mensaje':'Usuario registrado exitosamente. Revisa tu correo para activar tu cuenta.'})
         response.status_code = 200
         return response
+    
     
     except MySQLdb.IntegrityError as e:
         if e.args[0] == 1062:
@@ -84,6 +96,11 @@ def registrar(con, data):
         con.connection.rollback()
         return jsonify({'mensaje':'Error en la creación de usuario ' + str(e)})
     
+# ========================================
+# FUNCIÓN: Activación manual de cuenta (OBSOLETA)
+# USO: NO SE USA - Reemplazada por /activar-usuario en app.py
+# PROPÓSITO: Originalmente para activar cuentas, ahora sin uso
+# ========================================
 def validar_cuenta(con, data):
     cursor = con.connection.cursor()
     usuario_id = data['id']
@@ -93,6 +110,11 @@ def validar_cuenta(con, data):
     response.status_code = 200
     return response
 
+# ========================================
+# FUNCIÓN: Solicitud de recuperación de contraseña
+# USO: Ruta /recuperar/mail (POST) - app.py línea ~70
+# PROPÓSITO: Enviar email con enlace para restablecer contraseña olvidada
+# ========================================
 def recuperar_contraseña(con, data):
     
     email = data['email']
@@ -131,10 +153,10 @@ def recuperar_contraseña(con, data):
 
         Para recuperar tu contraseña, haz click en el siguiente enlace:
 
-        {dominio}/activar-cuenta?email={idUsuario}
+        {dominio}/restablecer-password?id={idUsuario}
 
         Saludos,
-        Tu equipo.
+        Equipo MultiShop
         """
 
         msg.attach(MIMEText(cuerpo, "plain"))
@@ -158,6 +180,11 @@ def recuperar_contraseña(con, data):
         response.status_code = 404
         return response
 
+# ========================================
+# FUNCIÓN: Cambio de contraseña con token de recuperación
+# USO: Ruta /recuperar/cambiar (PUT) - app.py línea ~75
+# PROPÓSITO: Actualizar contraseña del usuario después de validar enlace de recuperación
+# ========================================
 def cambiar_contraseña(con, data):
     usuario = data['usuario']
     password = data['password']
@@ -185,6 +212,11 @@ def cambiar_contraseña(con, data):
         response.status_code = 400
         return response
 
+# ========================================
+# FUNCIÓN: Consulta de datos de usuario
+# USO: Ruta /usuarios (GET) - app.py línea ~80
+# PROPÓSITO: Buscar usuario por RUT o email para obtener sus datos
+# ========================================
 def ver_usuario(con, rut, mail):
     cursor = con.connection.cursor()
 
@@ -218,7 +250,12 @@ def ver_usuario(con, rut, mail):
         response = jsonify({'mensaje':'No se han encontrado datos'})
         response.status_code = 404
         return response
-    
+
+# ========================================
+# FUNCIÓN: Actualización completa de datos de usuario
+# USO: Ruta /usuarios/<id> (PUT) - app.py línea ~85
+# PROPÓSITO: Modificar datos completos de un usuario (admin/edición de perfil)
+# ========================================    
 def actualizar_user(con, data, id):
     rut = data['rut']
     mail = data['mail']

@@ -95,6 +95,12 @@ def get_producto():
     search = request.args.get('search')
     return producto.lista_productos(conexion, pagina, categoria, subcategoria,search)
 
+# NUEVO! lo puse para poder mostrar productos en Oferta - KARLA
+@app.route('/producto/ofertas', methods=['GET'])
+def get_ofertas():
+    pagina = int(request.args.get('pagina', 1))
+    return producto.lista_productos_ofertas(conexion, pagina)
+
 @app.route('/producto/<producto_id>', methods=['GET'])
 def get_detalle(producto_id):
     return producto.ver_producto(conexion, producto_id)
@@ -107,6 +113,28 @@ def post_venta():
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     return send_from_directory('uploads', filename)
+
+# NUEVO-AGREGADO POR KARLA
+@app.route('/activar-usuario/<int:id>', methods=['PUT']) 
+def activar_usuario(id):
+    try:
+        cursor = conexion.connection.cursor()
+        sql = 'UPDATE usuario SET activeUsuario = 1 WHERE id = %s AND activeUsuario = 0'
+        cursor.execute(sql, (id,))
+        conexion.connection.commit()
+        
+        if cursor.rowcount > 0:
+            response = jsonify({'mensaje': 'Cuenta activada exitosamente'})
+            response.status_code = 200
+            return response
+        else:
+            response = jsonify({'mensaje': 'Usuario no encontrado o ya está activo'})
+            response.status_code = 400
+            return response
+    except Exception as e:
+        response = jsonify({'mensaje': 'Error al activar cuenta', 'error': str(e)})
+        response.status_code = 500
+        return response
 
 @app.route('/recuperar/mail', methods=['POST'])
 def mail_contraseña():
@@ -129,6 +157,33 @@ def get_user():
 def put_user(id):
     data = request.get_json()
     return actualizar_user(conexion, data, id)
+
+@app.route('/usuarios/<int:id>', methods=['GET'])
+def get_user_by_id(id):
+    cursor = conexion.connection.cursor()
+    sql = "SELECT id, rutUsuario, nomUsuario, apeUsuario, mailUsuario, rolUsuario, activeUsuario FROM usuario WHERE id = %s"
+    cursor.execute(sql, (id,))
+    
+    datos = cursor.fetchone()
+    
+    if datos:
+        usuario = {
+            'id': datos[0],
+            'rut': datos[1],
+            'nombre': datos[2],
+            'apellido': datos[3],
+            'mail': datos[4],
+            'rol': datos[5],
+            'activo': datos[6]
+        }
+        
+        response = jsonify({'mensaje': 'Usuario encontrado', 'usuario': usuario})
+        response.status_code = 200
+        return response
+    else:
+        response = jsonify({'mensaje': 'Usuario no encontrado'})
+        response.status_code = 404
+        return response
 
 @app.route('/producto/marca', methods=['GET'])
 def get_marca():
