@@ -6,14 +6,7 @@ from config import config
 app = Flask(__name__)
 app.config.from_object(config['development'])
 
-CORS(app, origins=[
-    "http://127.0.0.1:3000",
-    "http://localhost:3000",
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173"
-])
+CORS(app)
 
 conexion = MySQL(app)  # Conexión a la base de datos
 

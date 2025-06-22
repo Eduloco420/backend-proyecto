@@ -8,6 +8,7 @@ import producto, sucursal, ventas
 from register import registrar, recuperar_contraseña, cambiar_contraseña, ver_usuario, actualizar_user, activar_usuario
 import json
 from flask_cors import CORS
+import os
 
 app.register_blueprint(routes_auth)
 conexion = get_db()
@@ -202,5 +203,8 @@ def get_ventas():
     return ventas.ver_ventas(conexion)
 
 if __name__ == '__main__':
-    load_dotenv()
-    app.run(debug=True)
+    load_dotenv()  
+    
+    debug_mode = os.getenv('DEBUG', 'False') == 'True'
+    
+    app.run(debug=debug_mode, host='0.0.0.0', port=int(os.getenv('PORT', 5000)))

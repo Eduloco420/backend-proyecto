@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class DevelopmentConfig():
-    DEBUG=True
+    DEBUG= bool(os.getenv("DEBUG", "False") == "True")  
     MYSQL_HOST = os.getenv("MYSQL_HOST")
     MYSQL_PORT = int(os.getenv("MYSQL_PORT"))
     MYSQL_USER = os.getenv("MYSQL_USER")
