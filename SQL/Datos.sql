@@ -1,7 +1,7 @@
-INSERT INTO rolusuario VALUES (1, 'Cliente');
-INSERT INTO rolusuario VALUES (2, 'Administrador');
+INSERT INTO rolUsuario VALUES (1, 'Cliente');
+INSERT INTO rolUsuario VALUES (2, 'Administrador');
 
-INSERT INTO tiposucursal VALUES 
+INSERT INTO tipoSucursal VALUES 
 (1, 'Bodega'),
 (2, 'Tienda');
 
