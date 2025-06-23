@@ -63,10 +63,11 @@ def crear_marca(con,data):
     return response
 
 def crear_producto(con, data, imagenes, app):
+    print(data)
     nom_producto = data['nomProducto']
     desc_producto = data['descProducto']
     subcategoria = data['subCategoria']
-    marca = data['marca']
+    marca_info = data['marca']
     especificaciones = data['especificaciones']
     stock = data['stock']
     opcion = data['opcion']
@@ -75,8 +76,16 @@ def crear_producto(con, data, imagenes, app):
     precio = data['precio']
     
     try:
-        con.connection.begin()
         cursor = con.connection.cursor()
+
+        if marca_info['nueva']:
+            nombre = marca_info['nombre']
+            sql_marca = 'INSERT INTO marca (nomMarca) VALUES (%s)'
+            cursor.execute(sql_marca, (nombre,))
+            marca = cursor.lastrowid
+        else:
+            marca = marca_info['id'] 
+
         sql = ('INSERT INTO productos (nomProducto, descProducto, subCatProducto, marcaProducto, opcion, retiroSucursal, despachoDomicilio) VALUES (%s,%s,%s,%s,%s,%s,%s)')
         cursor.execute(sql, (nom_producto, desc_producto, subcategoria, marca, opcion, retiro_sucursal, despacho_domicilio))
         
@@ -119,7 +128,7 @@ def crear_producto(con, data, imagenes, app):
         return response
     except Exception as e:
         con.connection.rollback()
-        return jsonify({'mensaje':f"Error al insertar producto: {e}"})
+        return jsonify({'mensaje':f"Error al insertar producto: {e}"}), 500
     
 def lista_productos(con, pagina, categoria, subcategoria,search):
     cant_prod = 12
@@ -144,10 +153,11 @@ def lista_productos(con, pagina, categoria, subcategoria,search):
         sql = 'SELECT * FROM v_producto_lista where LOWER(nomProducto) like %s LIMIT %s OFFSET %s'
         cursor.execute(sql, (f"%{search.lower()}%", cant_prod, offset))
     else:    
-        sql = 'SELECT * FROM v_producto_lista'
-        cursor.execute(sql)
-        total_pag = 0
-        pagina = 0 
+        cursor.execute("SELECT count(idProducto) FROM v_producto_lista")
+        total_prod = cursor.fetchone()[0]
+        sql = 'SELECT * FROM v_producto_lista LIMIT %s OFFSET %s'
+        cursor.execute(sql, (cant_prod, offset))
+        total_pag = int(math.ceil(total_prod/cant_prod))
     datos = cursor.fetchall()
     productos = []
     for i in datos:
@@ -164,8 +174,7 @@ def lista_productos(con, pagina, categoria, subcategoria,search):
                     'imagen':i[10],
                     'despacho':i[11],
                     'retiro':i[12],
-                    'cantidadOpciones':i[13]}  #Agregué esto para poder saber si mostrar botón "Agregar al Carrito o "Ver Opciones" 
-        print(f"Producto {i[0]} tiene {i[13]} opciones")            
+                    'cantidadOpciones':i[13]}
         productos.append(producto)
     response = jsonify({'mensaje':'Listado Extraido correctamente',
                         'paginaActual': pagina,
@@ -318,6 +327,22 @@ def lista_categoria(con):
     response.status_code = 200
     return response   
 
+def subcat_por_cat(con, categoria):
+    cursor = con.connection.cursor()
+    sql = "SELECT * FROM subcategoria WHERE categoria = %s"
+    cursor.execute(sql, (categoria,))
+    datos = cursor.fetchall()
+    subcategorias = []
+    for d in datos:
+        subcategoria = {
+            'id':d[0],
+            'nombre':d[1],
+            'categoria':d[2]
+        }
+        subcategorias.append(subcategoria)
+
+    return subcategorias            
+
 def lista_marcas(con):
     cursor = con.connection.cursor()
     sql = "SELECT * FROM marca"
@@ -331,3 +356,15 @@ def lista_marcas(con):
     response = jsonify({'mensaje':'Datos conseguidos correctamente', 'marcas':marcas})
     response.status_code = 200
     return response
+
+def buscar_marca(con, search):
+    cursor = con.connection.cursor()
+    sql = "SELECT * FROM marca WHERE nomMarca like %s"
+    cursor.execute(sql, (f'{search}%', ))
+    datos = cursor.fetchall()
+    marcas = []
+    for d in datos:
+        marca = {'id':d[0],
+                 'nombre':d[1]}
+        marcas.append(marca)
+    return marcas

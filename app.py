@@ -60,7 +60,11 @@ def put_subcategoria(id):
 
 @app.route('/producto/subcategoria', methods=['GET'])
 def get_subcategoria():
-    return producto.lista_subcategoria(conexion)
+    categoria = request.args.get('categoria', type=int)
+    if categoria is not None:
+        return producto.subcat_por_cat(conexion, categoria)
+    else:
+        return producto.lista_subcategoria(conexion)
 
 @app.route('/producto/marca', methods=['POST'])
 def post_marca():
@@ -188,6 +192,10 @@ def get_user_by_id(id):
 
 @app.route('/producto/marca', methods=['GET'])
 def get_marca():
+    search = request.args.get('search')
+    if search is not None:
+        print('busqueda')
+        return producto.buscar_marca(conexion, search)
     return producto.lista_marcas(conexion)
 
 @app.route('/usuarios/activar/<int:id>', methods=['PUT'])

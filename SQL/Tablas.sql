@@ -184,7 +184,7 @@ CREATE TABLE `especificacionProducto` (
 CREATE TABLE `opcionProducto` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `producto` int,
-  `glosaOpcion` varchar(10),
+  `glosaOpcion` varchar(25),
   `opcionActiva` boolean
 );
 

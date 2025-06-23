@@ -2,7 +2,11 @@
     "nomProducto":"iPhone 15 pro max",
     "descProducto":"iPhone 15 pro max Nuevo",
     "subCategoria":"2",
-    "marca":"3",
+    "marca":{
+        "nueva":false,
+        "id":1,
+        "nombre":"Apple"
+    },
     "opcion":"Color",
     "retiroSucursal":"1",
     "despachoDomicilio":"1",
