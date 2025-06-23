@@ -100,7 +100,6 @@ def get_producto():
     search = request.args.get('search')
     return producto.lista_productos(conexion, pagina, categoria, subcategoria,search)
 
-# NUEVO! lo puse para poder mostrar productos en Oferta - KARLA
 @app.route('/producto/ofertas', methods=['GET'])
 def get_ofertas():
     pagina = int(request.args.get('pagina', 1))
@@ -119,7 +118,6 @@ def post_venta():
 def uploaded_file(filename):
     return send_from_directory('uploads', filename)
 
-# NUEVO-AGREGADO POR KARLA
 @app.route('/activar-usuario/<int:id>', methods=['PUT']) 
 def activar_usuario(id):
     try:

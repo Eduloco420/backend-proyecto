@@ -329,7 +329,7 @@ def lista_categoria(con):
 
 def subcat_por_cat(con, categoria):
     cursor = con.connection.cursor()
-    sql = "SELECT * FROM subcategoria WHERE categoria = %s"
+    sql = "SELECT * FROM subCategoria WHERE categoria = %s"
     cursor.execute(sql, (categoria,))
     datos = cursor.fetchall()
     subcategorias = []
