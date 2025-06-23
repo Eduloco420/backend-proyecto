@@ -32,7 +32,7 @@ def crear_subcategoria(con, data):
     subcategoria = data['subcategoria']
     categoria = data['categoria']
     cursor = con.connection.cursor()
-    sql = "INSERT INTO subcategoria (nomSubCategoria, categoria) VALUES (%s, %s)"
+    sql = "INSERT INTO subCategoria (nomSubCategoria, categoria) VALUES (%s, %s)"
     cursor.execute(sql, (subcategoria,categoria))
     con.connection.commit()
     response = jsonify({'mensaje':'Subcategoria creada con exito'})
@@ -43,7 +43,7 @@ def editar_subcategoria(con, data, id):
     nombre = data['nombre'],
     categoria = data['categoria']
     cursor = con.cursor.cursor()
-    sql = "UPDATE subcategoria SET nomsubcategoria = %s, categoria = %s WHERE id = %s"
+    sql = "UPDATE subCategoria SET nomSubCategoria = %s, categoria = %s WHERE id = %s"
     cursor.execute(sql, (nombre, categoria, id))
     con.connection.commit()
     cursor.close()
