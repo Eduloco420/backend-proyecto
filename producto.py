@@ -84,7 +84,7 @@ def crear_producto(con, data, imagenes, app):
             cursor.execute(sql_marca, (nombre,))
             marca = cursor.lastrowid
         else:
-            marca = marca_info['id'] 
+            marca = marca_info['id']
 
         sql = ('INSERT INTO productos (nomProducto, descProducto, subCatProducto, marcaProducto, opcion, retiroSucursal, despachoDomicilio) VALUES (%s,%s,%s,%s,%s,%s,%s)')
         cursor.execute(sql, (nom_producto, desc_producto, subcategoria, marca, opcion, retiro_sucursal, despacho_domicilio))
@@ -100,13 +100,13 @@ def crear_producto(con, data, imagenes, app):
             
         sqlOpcion = ('INSERT INTO opcionProducto (producto, glosaOpcion, opcionActiva) VALUES (%s,%s,1)')
         sqlStock = ('INSERT INTO inventario (producto, stock, sucursal) VALUES (%s,%s,%s)')
-        sqlImagen = ('INSERT INTO imagenproducto (producto, imagen) VALUES (%s, %s)')
+        sqlImagen = ('INSERT INTO imagenProducto (producto, imagen) VALUES (%s, %s)')
 
         for i in stock:
             cursor.execute(sqlOpcion, (producto_id, i['opcion']))
             opcion_id = cursor.lastrowid
             for c in i['cantidad']:
-                cantidad_valor = c.get('cant')  
+                cantidad_valor = c.get('cant')
                 cursor.execute(sqlStock, (opcion_id, cantidad_valor, c['sucursal']))
 
         rutas_imagenes = []
