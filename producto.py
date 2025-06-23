@@ -42,7 +42,7 @@ def crear_subcategoria(con, data):
 def editar_subcategoria(con, data, id):
     nombre = data['subcategoria'],
     categoria = data['categoria']
-    cursor = con.cursor.cursor()
+    cursor = con.connection.cursor()
     sql = "UPDATE subCategoria SET nomSubCategoria = %s, categoria = %s WHERE id = %s"
     cursor.execute(sql, (nombre, categoria, id))
     con.connection.commit()
