@@ -16,6 +16,24 @@ CREATE OR REPLACE VIEW v_sucursal AS (
   WHERE s.activaSucursal = 1
 );
 
+CREATE OR REPLACE VIEW v_sucursal_2 AS (
+	SELECT 	s.id,
+			nomSucursal,
+			direccionSucursal,
+			tipoSucursal,
+			activaSucursal,
+			comunaSucursal as 'Comuna',
+			p.id as 'Provincia',
+			r.id as 'region'
+	FROM sucursal s
+	INNER JOIN comuna c
+	ON (s.comunaSucursal = c.id)
+	INNER JOIN provincia p
+	ON (c.provincia = p.id)
+	INNER JOIN region r
+	ON (p.region = r.id)
+);
+
 CREATE OR REPLACE VIEW v_producto_lista AS (
   SELECT
     p.id AS idProducto,

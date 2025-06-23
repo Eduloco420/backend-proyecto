@@ -4,7 +4,7 @@ from config import config
 from dotenv import load_dotenv
 from login import routes_auth
 from db import app, get_db
-import producto, sucursal, ventas
+import producto, sucursal, ventas, direccion
 from register import registrar, recuperar_contraseña, cambiar_contraseña, ver_usuario, actualizar_user, activar_usuario
 import json
 from flask_cors import CORS
@@ -27,7 +27,7 @@ def prueba():
                 'nombreComuna':fila[1],
                 'provincia':fila[2]}
         comunas.append(comuna)
-    return jsonify({'comunas':comunas, 'mensaje':'Consula OK'})    
+    return jsonify({'comunas':comunas, 'mensaje':'Consula OK'})
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -76,9 +76,23 @@ def post_sucursal():
     data = request.get_json()
     return sucursal.crear_sucursal(conexion, data)
 
+@app.route('/ubicaciones', methods=['GET'])
+def get_ubicaciones():
+    return direccion.obtener_ubicaciones(conexion)
+
 @app.route('/sucursal', methods=['GET'])
-def get_sucursal():
-    return sucursal.lista_sucursales(conexion)
+def get_sucursales():
+    todos = request.args.get('todos')
+    return sucursal.lista_sucursales(conexion, todos)
+
+@app.route('/sucursal/<int:id>', methods=['PUT'])
+def put_sucursal(id):
+    data = request.get_json()
+    return sucursal.editar_sucursal(conexion, data, id)
+
+@app.route('/sucursal/<int:id>', methods=['GET'])
+def get_sucursal(id):
+    return sucursal.buscar_sucursal(conexion, id)
 
 @app.route('/producto', methods=['POST'])
 def post_producto():
@@ -207,6 +221,20 @@ def get_pagos(id):
 @app.route('/ventas', methods=['GET'])
 def get_ventas():
     return ventas.ver_ventas(conexion)
+
+@app.route('/region', methods=['GET'])
+def get_region():
+    return direccion.obtener_region(conexion)
+
+@app.route('/provincia', methods=['GET'])
+def get_provincia():
+    region = request.args.get('region')
+    return direccion.obtener_provincia(conexion, region)
+
+@app.route('/comuna', methods=['GET'])
+def get_comuna():
+    provincia = request.args.get('provincia')
+    return direccion.obtener_comuna(conexion, provincia)
 
 if __name__ == '__main__':
     load_dotenv()  
