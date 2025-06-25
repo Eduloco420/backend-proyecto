@@ -2,6 +2,7 @@ from flask import jsonify
 import os
 import uuid
 import math
+import cloudinary.uploader
 
 def crear_categoria(con, data):
     categoria = data['categoria']
@@ -63,7 +64,6 @@ def crear_marca(con,data):
     return response
 
 def crear_producto(con, data, imagenes, app):
-    print(data)
     nom_producto = data['nomProducto']
     desc_producto = data['descProducto']
     subcategoria = data['subCategoria']
@@ -108,17 +108,24 @@ def crear_producto(con, data, imagenes, app):
             for c in i['cantidad']:
                 cantidad_valor = c.get('cant')
                 cursor.execute(sqlStock, (opcion_id, cantidad_valor, c['sucursal']))
-
-        rutas_imagenes = []
             
         for img in imagenes:
             if img.filename != '':
-                ext = os.path.splitext(img.filename)[1]
-                nombreArchivo = f"{producto_id}_{uuid.uuid4().hex}{ext}"
-                ruta = os.path.join(app.config['UPLOAD_FOLDER'], nombreArchivo)
-                img.save(ruta)
-                rutas_imagenes.append(ruta)
-                cursor.execute(sqlImagen, (producto_id, nombreArchivo))
+                result = cloudinary.uploader.upload(
+                    img,
+                    folder="productos",
+                    public_id=f"{producto_id}_{uuid.uuid4().hex}"
+                )
+
+                public_id_completo = result['public_id']  # productos/46_abc123xyz
+                formato = result['format']                # webp
+
+                # Ahora extraemos sólo el nombre sin el folder
+                nombre_sin_folder = public_id_completo.split('/')[-1]  # 46_abc123xyz
+
+                nombre_archivo = f"{nombre_sin_folder}.{formato}"  # 46_abc123xyz.webp
+
+                cursor.execute(sqlImagen, (producto_id, nombre_archivo))
 
         con.connection.commit()
         cursor.close()

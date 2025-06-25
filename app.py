@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, redirect
 from flask_mysqldb import MySQL
 from config import config
 from dotenv import load_dotenv
@@ -9,9 +9,16 @@ from register import registrar, recuperar_contraseña, cambiar_contraseña, ver_
 import json
 from flask_cors import CORS
 import os
+import cloudinary
 
 app.register_blueprint(routes_auth)
 conexion = get_db()
+
+cloudinary.config(
+    cloud_name=app.config['CLOUDINARY_CLOUD_NAME'],
+    api_key=app.config['CLOUDINARY_API_KEY'],
+    api_secret=app.config['CLOUDINARY_API_SECRET']
+)
 
 CORS(app)
 
@@ -128,9 +135,39 @@ def post_venta():
     data = request.get_json()
     return ventas.ingresar_venta(conexion, data)
 
-@app.route('/uploads/<path:filename>')
-def uploaded_file(filename):
-    return send_from_directory('uploads', filename)
+@app.route('/uploads/<string:nombre_archivo>')
+def uploaded_file(nombre_archivo):
+    public_id_sin_extension = nombre_archivo.rsplit('.', 1)[0]
+    public_id_completo = f"productos/{public_id_sin_extension}"
+    url = cloudinary.CloudinaryImage(public_id_completo).build_url(secure=True, force_version=False)
+    return redirect(url)
+
+@app.route('/subir_imagenes', methods=['POST'])
+def subir_imagenes():
+    if 'imagenes' not in request.files:
+        return jsonify({'error': 'No se encontraron archivos con key "imagenes"'}), 400
+
+    archivos = request.files.getlist('imagenes')
+    resultados = []
+
+    for archivo in archivos:
+        if archivo.filename == '':
+            continue
+
+        result = cloudinary.uploader.upload(
+            archivo,
+            folder="productos"  # o el folder que uses
+        )
+
+        resultados.append({
+            'public_id': result['public_id'],
+            'secure_url': result['secure_url'],
+            'format': result['format'],
+            'version': result['version']
+        })
+
+    return jsonify({'imagenes_subidas': resultados}), 200
+
 
 @app.route('/activar-usuario/<int:id>', methods=['PUT']) 
 def activar_usuario(id):
