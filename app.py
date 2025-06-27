@@ -4,7 +4,7 @@ from config import config
 from dotenv import load_dotenv
 from login import routes_auth
 from db import app, get_db
-import producto, sucursal, ventas, direccion
+import producto, sucursal, ventas, direccion, tienda
 from register import registrar, recuperar_contraseña, cambiar_contraseña, ver_usuario, actualizar_user, activar_usuario
 import json
 from flask_cors import CORS
@@ -272,6 +272,15 @@ def get_provincia():
 def get_comuna():
     provincia = request.args.get('provincia')
     return direccion.obtener_comuna(conexion, provincia)
+
+@app.route('/tienda', methods=['GET'])
+def get_tienda():
+    return tienda.obtener_tienda(conexion)
+
+@app.route('/tienda', methods=['PUT'])
+def put_tienda():
+    data = request.get_json()
+    return tienda.editar_tienda(conexion, data)
 
 if __name__ == '__main__':
     load_dotenv()  

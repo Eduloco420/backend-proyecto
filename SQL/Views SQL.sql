@@ -13,7 +13,6 @@ CREATE OR REPLACE VIEW v_sucursal AS (
   JOIN provincia p ON c.provincia = p.id
   JOIN region r ON r.id = p.region
   JOIN tipoSucursal ts ON ts.id = s.tipoSucursal
-  WHERE s.activaSucursal = 1
 );
 
 CREATE OR REPLACE VIEW v_sucursal_2 AS (

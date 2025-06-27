@@ -177,14 +177,14 @@ CREATE TABLE `productoFavorito` (
 CREATE TABLE `especificacionProducto` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `producto` int,
-  `nombreEspecificacion` varchar(15),
-  `valorEspecificacion` varchar(15)
+  `nombreEspecificacion` varchar(40),
+  `valorEspecificacion` varchar(40)
 );
 
 CREATE TABLE `opcionProducto` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `producto` int,
-  `glosaOpcion` varchar(25),
+  `glosaOpcion` varchar(40),
   `opcionActiva` boolean
 );
 
