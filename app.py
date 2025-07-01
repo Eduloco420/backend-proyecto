@@ -251,13 +251,13 @@ def get_marca():
 def active_user(id):
     return activar_usuario(conexion, id)
 
-@app.route('/pagos/<int:id>', methods=['GET'])
-def get_pagos(id):
-    return ventas.ver_pagos(conexion, id)
-
 @app.route('/ventas', methods=['GET'])
 def get_ventas():
     return ventas.ver_ventas(conexion)
+
+@app.route('/ventas/<int:id>', methods=['GET'])
+def get_detalle_venta(id):
+    return ventas.detalle_venta(conexion, id)
 
 @app.route('/region', methods=['GET'])
 def get_region():

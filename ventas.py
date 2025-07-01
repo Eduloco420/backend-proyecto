@@ -53,14 +53,14 @@ def ingresar_venta(con, data):
             cursor.execute(sqlRetiro, (ventaId, sucursal))
 
         sqlStock = 'INSERT INTO inventario (producto, stock, sucursal) VALUES (%s, %s, %s)'
-        sqlDetalle = 'INSERT INTO detalleVenta (venta, producto) VALUES (%s, %s)'
+        sqlDetalle = 'INSERT INTO detalleVenta (venta, opcionProducto, cantidad) VALUES (%s, %s, %s)'
 
         for p in productos:
             producto = p['producto']
             opcion = p['opcion']
             cant = (int(p['cant']) * -1)
             
-            cursor.execute(sqlDetalle, (ventaId, producto))
+            cursor.execute(sqlDetalle, (ventaId, opcion, p['cant']))
             cursor.execute(sqlStock, (opcion, cant, sucursal))
 
         con.connection.commit()
@@ -87,8 +87,9 @@ def ver_ventas(con):
                     'nombre':d[2],
                     'mail':d[3],
                     'fecVenta':d[4].strftime("%d-%m-%Y %H:%M"),
-                    'estadoVenta':d[5],
-                    'glosaEstadoVenta':d[6]}
+                    'tipoEntrega':d[5],
+                    'estadoVenta':d[6],
+                    'glosaEstadoVenta':d[7]}
             ventas.append(venta)
         response = jsonify({'Mensaje':'Datos obtenidos correctamente', 'Ventas':ventas})
         response.status_code = 200
@@ -98,23 +99,68 @@ def ver_ventas(con):
         response.status_code = 500
         return response
 
-def ver_pagos(con, venta):
+def detalle_venta(con, venta):
     try:
+        
         cursor = con.connection.cursor()
-        sql = "SELECT * FROM v_pagos where venta = %s"
-        cursor.execute(sql, (venta, ))
+
+        sql_info = "SELECT * FROM v_ventas WHERE id = %s"
+        cursor.execute(sql_info, (venta,))
+        datos = cursor.fetchone()
+        info = {
+            'id':datos[0],
+            'rut':datos[1],
+            'nombre':datos[2],
+            'mail':datos[3],
+            'fechaVenta':datos[4],
+            'tipoEntrega':datos[5],
+            'estadoVenta':datos[6],
+            'glosaEstadoVenta':datos[7]
+        }
+
+        sql_pagos = "SELECT * FROM v_pagos where venta = %s"
+        cursor.execute(sql_pagos, (venta, ))
         datos = cursor.fetchall()
 
         pagos = []
         for d in datos:
-            pago = {'id':d[0],
-                    'venta':d[1],
-                    'nroTarjeta':d[2],
-                    'MontoPago':d[3],
-                    'estadoPago':d[4],
-                    'glosaEstadoPago':d[5]}
+            pago = {
+                'id':d[0],
+                'venta':d[1],
+                'nroTarjeta':d[2],
+                'MontoPago':d[3],
+                'estadoPago':d[4],
+                'glosaEstadoPago':d[5]
+                }
             pagos.append(pago)
-        response = jsonify({'mensaje':'Datos conseguidos correctamente','Pagos':pagos})        
+
+        sql_productos = "SELECT * FROM v_detalle_venta WHERE idVenta = %s"
+        cursor.execute(sql_productos, (venta,))
+        datos = cursor.fetchall()
+        
+        productos = []
+        for d in datos:
+            producto = {
+                'venta':d[0],
+                'idDetalle':d[1],
+                'idOpcion':d[2],
+                'nomProducto':d[3],
+                'nomMarca':d[4],
+                'glosaOpcion':d[5],
+                'cantidad':d[6],
+                'valorProducto':d[7],
+                'porcDescuento':d[8],
+                'valorTotal':d[9]
+            }
+            productos.append(producto)
+
+
+        response = jsonify({
+            'mensaje':'Datos conseguidos correctamente',
+            'Pagos':pagos,
+            'productos':productos,
+            'info':info
+            })        
         response.status_code = 200
         return response
     except Exception as e:

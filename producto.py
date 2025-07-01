@@ -262,7 +262,7 @@ def ver_producto(con, prod):
                 'cantStock':s[3]}
         stocks.append(stock)
         
-    sqlImagen = 'SELECT imagen FROM imagenproducto WHERE producto = %s'
+    sqlImagen = 'SELECT imagen FROM imagenProducto WHERE producto = %s'
     cursor.execute(sqlImagen, (prod, ))
     imagenData = cursor.fetchall()
     imagenes = []

@@ -139,10 +139,72 @@ CREATE OR REPLACE VIEW v_ventas AS (
     COALESCE(CONCAT(u.nomUsuario, ' ', u.apeUsuario), CONCAT(ci.nomClienteInv, ' ', ci.apeClienteInv)) AS nombreCliente,
     COALESCE(u.mailUsuario, ci.mailClienteInv) AS mailCliente,
     v.fecVenta,
+    CASE 
+        WHEN d.id IS NOT NULL THEN 'Despacho'
+        WHEN r.id IS NOT NULL THEN 'Retiro'
+        ELSE 'Sin entrega registrada'
+    END AS tipoEntrega,
     v.estadoVenta,
     ev.glosaEstadoVta
   FROM venta v
+  LEFT JOIN despacho d ON d.venta = v.id
+  LEFT JOIN retiro r ON r.venta = v.id
   LEFT JOIN usuario u ON v.cliente = u.id
   LEFT JOIN clienteInvitado ci ON v.clienteInvitado = ci.id
   LEFT JOIN estadoVenta ev ON v.estadoVenta = ev.id
 );
+
+CREATE OR REPLACE VIEW v_pagos AS
+    SELECT 
+        p.id AS id,
+        p.venta AS venta,
+        CONCAT(REPEAT('*', 11),
+		RIGHT(p.nroTarjeta, 5)) AS 'nro Tarjeta',
+        p.montoPago AS montoPago,
+        p.estadoPago AS estadoPago,
+        ep.glosaEstadoPago AS glosaEstadoPago
+    FROM
+        pago p
+        LEFT JOIN estadopago ep 
+        ON (p.estadoPago = ep.id);
+        
+CREATE OR REPLACE VIEW v_detalle_venta AS
+	SELECT 
+		dv.venta AS idVenta,
+		dv.id AS idDetalle,
+		op.id AS idOpcion,
+		p.nomProducto,
+		m.nomMarca,
+		op.glosaOpcion,
+		dv.cantidad,
+		vp.valorProducto,
+		(dv.cantidad * vp.valorProducto) AS totalItem
+	FROM detalleVenta dv
+	INNER JOIN opcionProducto op 
+		ON dv.opcionProducto = op.id
+	INNER JOIN productos p 
+		ON op.producto = p.id
+	INNER JOIN marca m
+		ON p.marcaProducto = m.id
+	INNER JOIN venta v 
+		ON dv.venta = v.id
+	INNER JOIN valorProducto vp
+		ON vp.producto = p.id
+	   AND vp.fecInicVigValor = (
+		   SELECT MAX(vp2.fecInicVigValor)
+		   FROM valorProducto vp2
+		   WHERE vp2.producto = p.id
+			 AND vp2.fecInicVigValor <= v.fecVenta
+	   );
+    
+CREATE OR REPLACE VIEW v_forma_entrega AS
+	SELECT 
+		v.id AS venta_id,
+		CASE 
+			WHEN d.id IS NOT NULL THEN 'Despacho'
+			WHEN r.id IS NOT NULL THEN 'Retiro'
+			ELSE 'Sin entrega registrada'
+		END AS tipo_entrega
+	FROM venta v
+	LEFT JOIN despacho d ON d.venta = v.id
+	LEFT JOIN retiro r ON r.venta = v.id;    

@@ -108,9 +108,10 @@ CREATE TABLE `descuentoProducto` (
 );
 
 CREATE TABLE `detalleVenta` (
-  `id` int PRIMARY KEY AUTO_INCREMENT,
-  `venta` int NOT NULL,
-  `producto` int NOT NULL
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `venta` INT NOT NULL,
+  `opcionProducto` INT NOT NULL,
+  `cantidad` INT NOT NULL
 );
 
 CREATE TABLE `estadoVenta` (
@@ -227,7 +228,7 @@ ALTER TABLE `sucursalRetiro` ADD FOREIGN KEY (`sucursal`) REFERENCES `sucursal` 
 
 ALTER TABLE `venta` ADD FOREIGN KEY (`cliente`) REFERENCES `usuario` (`id`);
 
-ALTER TABLE `detalleVenta` ADD FOREIGN KEY (`producto`) REFERENCES `productos` (`id`);
+ALTER TABLE `detalleVenta` ADD FOREIGN KEY (`opcionProducto`) REFERENCES `opcionProducto` (`id`);
 
 ALTER TABLE `detalleVenta` ADD FOREIGN KEY (`venta`) REFERENCES `venta` (`id`);
 
