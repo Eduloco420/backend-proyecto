@@ -113,6 +113,27 @@ def post_producto():
 
     return producto.crear_producto(conexion, data, imagenes, app)
 
+@app.route('/producto/especificacion/<int:id>', methods=['DELETE'])
+def delete_especificacion(id):
+    return producto.eliminar_especificacion(conexion, id)
+
+@app.route('/producto/especificacion', methods=['POST'])
+def post_especificacion():
+    especs = request.get_json()
+    return producto.editar_especificacion(conexion, especs)
+
+@app.route('/producto/opciones', methods=['POST'])
+def post_stock():
+    opciones = request.get_json()
+    return producto.editar_opciones(conexion, opciones)
+
+@app.route('/producto/<int:id>', methods=['PUT'])
+def put_producto(id):
+    data = request.form.get('data')
+    data = json.loads(data)
+    imagen = request.files.getlist('imagenes')
+    return producto.editar_producto(conexion, data, imagen, id)
+
 @app.route('/producto', methods=['GET'])
 def get_producto():
     pagina = int(request.args.get('pagina', 1))
@@ -120,6 +141,10 @@ def get_producto():
     subcategoria = request.args.get('subcategoria')
     search = request.args.get('search')
     return producto.lista_productos(conexion, pagina, categoria, subcategoria,search)
+
+@app.route('/producto/detalle/<int:id>', methods=['GET'])
+def get_detalle_producto(id):
+    return producto.ver_detalle_producto(conexion, id)
 
 @app.route('/producto/ofertas', methods=['GET'])
 def get_ofertas():
@@ -141,6 +166,10 @@ def uploaded_file(nombre_archivo):
     public_id_completo = f"productos/{public_id_sin_extension}"
     url = cloudinary.CloudinaryImage(public_id_completo).build_url(secure=True, force_version=False)
     return redirect(url)
+
+@app.route('/uploads/<int:id>', methods=['DELETE'])
+def delete_file(id):
+    return producto.eliminar_imagen(conexion, id)
 
 @app.route('/subir_imagenes', methods=['POST'])
 def subir_imagenes():

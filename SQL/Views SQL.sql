@@ -170,32 +170,37 @@ CREATE OR REPLACE VIEW v_pagos AS
         
 CREATE OR REPLACE VIEW v_detalle_venta AS
 	SELECT 
-		dv.venta AS idVenta,
-		dv.id AS idDetalle,
-		op.id AS idOpcion,
-		p.nomProducto,
-		m.nomMarca,
-		op.glosaOpcion,
-		dv.cantidad,
-		vp.valorProducto,
-		(dv.cantidad * vp.valorProducto) AS totalItem
-	FROM detalleVenta dv
-	INNER JOIN opcionProducto op 
-		ON dv.opcionProducto = op.id
-	INNER JOIN productos p 
-		ON op.producto = p.id
-	INNER JOIN marca m
-		ON p.marcaProducto = m.id
-	INNER JOIN venta v 
-		ON dv.venta = v.id
-	INNER JOIN valorProducto vp
-		ON vp.producto = p.id
-	   AND vp.fecInicVigValor = (
-		   SELECT MAX(vp2.fecInicVigValor)
-		   FROM valorProducto vp2
-		   WHERE vp2.producto = p.id
-			 AND vp2.fecInicVigValor <= v.fecVenta
-	   );
+    dv.venta AS idVenta,
+    dv.id AS idDetalle,
+    op.id AS idOpcion,
+    p.nomProducto,
+    m.nomMarca,
+    op.glosaOpcion,
+    dv.cantidad,
+    vp.valorProducto,
+    IFNULL(dp.porcDescuento, 0) AS porcDescuento,
+    ROUND(dv.cantidad * vp.valorProducto * (1 - IFNULL(dp.porcDescuento, 0)/100), 2) AS totalItem
+FROM detalleVenta dv
+INNER JOIN opcionProducto op 
+    ON dv.opcionProducto = op.id
+INNER JOIN productos p 
+    ON op.producto = p.id
+INNER JOIN marca m
+    ON p.marcaProducto = m.id
+INNER JOIN venta v 
+    ON dv.venta = v.id
+INNER JOIN valorProducto vp
+    ON vp.producto = p.id
+   AND vp.fecInicVigValor = (
+       SELECT MAX(vp2.fecInicVigValor)
+       FROM valorProducto vp2
+       WHERE vp2.producto = p.id
+         AND vp2.fecInicVigValor <= v.fecVenta
+   )
+LEFT JOIN descuentoProducto dp
+    ON dp.producto = p.id
+   AND v.fecVenta BETWEEN dp.fecInicVigDescuento AND dp.fecTermVigDescuento;
+
     
 CREATE OR REPLACE VIEW v_forma_entrega AS
 	SELECT 
@@ -207,4 +212,46 @@ CREATE OR REPLACE VIEW v_forma_entrega AS
 		END AS tipo_entrega
 	FROM venta v
 	LEFT JOIN despacho d ON d.venta = v.id
-	LEFT JOIN retiro r ON r.venta = v.id;    
+	LEFT JOIN retiro r ON r.venta = v.id;   
+    
+CREATE OR REPLACE VIEW v_detalle_producto AS
+	SELECT 	p.id,
+			p.nomProducto,
+			p.descProducto,
+			p.subCatProducto,
+			sc.nomSubCategoria,
+			sc.categoria,
+			c.nomCategoria,
+			p.marcaProducto,
+			m.nomMarca,
+			p.opcion,
+			p.productoActive,
+			p.retiroSucursal,
+			p.despachoDomicilio
+	FROM productos p
+	INNER JOIN marca m
+	ON (p.marcaProducto = m.id)
+	INNER JOIN subcategoria sc
+	ON (p.subCatProducto = sc.id)
+	INNER JOIN categoria c
+	ON (sc.categoria = c.id);
+    
+CREATE OR REPLACE VIEW v_detalle_stock AS
+	SELECT 	op.id,
+			op.producto,
+			op.glosaOpcion,
+			op.opcionActiva,
+			sum(i.stock) as cantidad,
+			i.sucursal,
+			s.nomSucursal
+	FROM opcionproducto op
+	INNER JOIN inventario i 
+	ON (op.id = i.producto)
+	INNER JOIN sucursal s 
+	ON (i.sucursal = s.id)
+	WHERE op.producto = 1
+	GROUP BY 	op.id,
+				op.producto,
+				op.glosaOpcion,
+				op.opcionActiva,
+				i.sucursal;

@@ -375,3 +375,196 @@ def buscar_marca(con, search):
                  'nombre':d[1]}
         marcas.append(marca)
     return marcas
+
+def ver_detalle_producto(con, id):
+    cursor = con.connection.cursor()
+    sql_producto = "SELECT * FROM v_detalle_producto WHERE id = %s"
+    cursor.execute(sql_producto, (id,))
+    prod_datos = cursor.fetchone()
+
+    sql_imagen = "SELECT id, imagen FROM imagenproducto WHERE producto = %s"
+    cursor.execute(sql_imagen, (id,))
+    img_datos = cursor.fetchall()
+    imagenes = []
+    for img in img_datos:
+        imagenes.append({
+            'id':img[0],
+            'imagen':img[1]
+        })
+
+    sql_valor = "SELECT * FROM valorProducto WHERE producto = %s"
+    cursor.execute(sql_valor, (id,))
+    valor_datos = cursor.fetchall()
+    precios = []
+    for valor in valor_datos:
+        precios.append({
+            'id':valor[0],
+            'valorProducto':valor[2],
+            'fecInicioVig':valor[3]
+        })
+
+    sql_espec = "SELECT id, nombreEspecificacion, valorEspecificacion FROM especificacionproducto WHERE producto = %s"
+    cursor.execute(sql_espec, (id,))
+    espec_datos = cursor.fetchall()
+    especificaciones = []
+    for espec in espec_datos:
+        especificaciones.append({
+            'id':espec[0],
+            'nombre':espec[1],
+            'valor':espec[2]
+        })
+    
+    sql_stock = "SELECT * FROM v_detalle_stock WHERE producto = %s"
+    cursor.execute(sql_stock, (id,))
+    stock_datos = cursor.fetchall()
+    stock = []
+    for st in stock_datos:
+        stock.append({
+            'id':st[0],
+            'glosaOpcion':st[2],
+            'opcionActiva':st[3],
+            'cantidad':st[4],
+            'idSucursal':st[5],
+            'nomSucursal':st[6]
+        })
+
+    producto = {
+        'id':prod_datos[0],
+        'nomProducto':prod_datos[1],
+        'descProducto':prod_datos[2],
+        'idSubCat':prod_datos[3],
+        'nomSubCat':prod_datos[4],
+        'idCat':prod_datos[5],
+        'nomCat':prod_datos[6],
+        'idMarca':prod_datos[7],
+        'nomMarca':prod_datos[8],
+        'opcion':prod_datos[9],
+        'productoActivo':prod_datos[10],
+        'retiroSucursal':prod_datos[11],
+        'despachoDomicilio':prod_datos[12],
+        'imagenes':imagenes,
+        'precios':precios,
+        'especificaciones':especificaciones,
+        'stock':stock
+    }
+
+    return producto, 200
+
+def eliminar_imagen(con, id):
+    cursor = con.connection.cursor()
+    sql = "DELETE FROM imagenProducto WHERE id = %s"
+    cursor.execute(sql, (id,))
+    con.connection.commit()
+    cursor.close()
+    return jsonify({'mensaje':'borrado con exito'})
+
+def editar_producto(con, data, imagenes, id):
+    nombre = data['nomProducto']
+    descripcion = data['descProducto']
+    subcategoria = data['subCategoria']
+    opcion = data['opcion']
+    retiro = int(data['retiroSucursal'])
+    despacho = int(data['despachoDomicilio'])
+    activo = int(data['productoActivo'])
+
+    cursor = con.connection.cursor()
+
+
+    if data['marca']['nueva']:
+        nombre = data['marca']['nombre']
+        sql_marca = 'INSERT INTO marca (nomMarca) VALUES (%s)'
+        cursor.execute(sql_marca, (nombre,))
+        id_marca = cursor.lastrowid
+    else:
+        id_marca = int(data['marca']['id'])
+
+    sql = """UPDATE productos SET   nomProducto = %s, 
+                                    descProducto = %s, 
+                                    subCatProducto = %s, 
+                                    marcaProducto = %s, 
+                                    opcion = %s, 
+                                    productoActive = %s, 
+                                    retiroSucursal = %s, 
+                                    despachoDomicilio = %s
+                                    WHERE id = %s"""
+    
+    cursor.execute(sql, (nombre, descripcion, subcategoria, id_marca, opcion, activo, retiro, despacho, id))
+
+    sqlImagen = ('INSERT INTO imagenProducto (producto, imagen) VALUES (%s, %s)')
+
+    for img in imagenes:
+        if img.filename != '':
+            result = cloudinary.uploader.upload(
+                img,
+                folder="productos",
+                public_id=f"{id}_{uuid.uuid4().hex}"
+            )
+
+            public_id_completo = result['public_id'] 
+            formato = result['format']                
+
+            nombre_sin_folder = public_id_completo.split('/')[-1]  # 46_abc123xyz
+            nombre_archivo = f"{nombre_sin_folder}.{formato}"  # 46_abc123xyz.webp
+            cursor.execute(sqlImagen, (id, nombre_archivo))
+    
+    con.connection.commit()
+    cursor.close()
+
+    response = jsonify({'mensaje':'Producto modificado con exito'})
+    response.status_code = 200
+    return response
+    
+def eliminar_especificacion(con, id):
+    cursor = con.connection.cursor()
+    sql = "DELETE FROM especificacionProducto WHERE id = %s"
+    cursor.execute(sql, (id,))
+    con.connection.commit()
+    cursor.close()
+
+    return jsonify({'mensaje':'Especificación eliminada'})
+
+def editar_especificacion(con, especs):
+    cursor = con.connection.cursor()
+    sql_update = "UPDATE especificacionProducto SET nombreEspecificacion = %s, valorEspecificacion = %s WHERE id = %s"
+    sql_insert = "INSERT INTO especificacionProducto (producto, nombreEspecificacion, valorEspecificacion) VALUES (%s, %s, %s)"
+
+    for espec in especs:
+        if espec['id'] is None:
+            cursor.execute(sql_insert, (espec['producto'], espec['nombre'], espec['valor']))
+        else:
+            cursor.execute(sql_update, (espec['nombre'], espec['valor'], espec['id']))   
+
+    con.connection.commit()
+    cursor.close()
+
+    return jsonify({'mensaje':'Cambios realizados con exito'})
+
+def editar_opciones(con, opciones):
+    cursor = con.connection.cursor()
+    print(opciones)
+    sql_update_op = "UPDATE opcionProducto SET glosaOpcion = %s, opcionActiva = %s WHERE id = %s"
+    sql_stock = "INSERT INTO inventario (producto, stock, sucursal) VALUES (%s,%s,%s)"
+    sql_insert_op = "INSERT INTO opcionProducto (producto, glosaOpcion, opcionActiva) VALUES (%s,%s, 1)"
+
+
+    try:
+        con.connection.begin()
+        for opcion in opciones:
+            op = opcion['opcion']
+            if op['id'] is not None:
+                cursor.execute(sql_update_op, (op['nombre'], op['activa'], op['id']))
+                id_opcion = op['id']
+            else:
+                cursor.execute(sql_insert_op, (opcion['producto'], op['nombre']))
+                id_opcion = cursor.lastrowid
+
+            if opcion['cantidad'] is not None:
+                cursor.execute(sql_stock, (id_opcion, opcion['cantidad'], opcion['sucursal']))
+
+        con.connection.commit()
+        cursor.close()
+
+        return jsonify({'mensaje':'Cambios realizado con exito'})
+    except Exception as e:
+        con.connection.rollback()
+        return jsonify({'mensaje':'Error cargando los datos', 'error':str(e)}), 400
