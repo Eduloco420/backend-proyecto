@@ -165,7 +165,7 @@ CREATE OR REPLACE VIEW v_pagos AS
         ep.glosaEstadoPago AS glosaEstadoPago
     FROM
         pago p
-        LEFT JOIN estadopago ep 
+        LEFT JOIN estadoPago ep 
         ON (p.estadoPago = ep.id);
         
 CREATE OR REPLACE VIEW v_detalle_venta AS
@@ -231,7 +231,7 @@ CREATE OR REPLACE VIEW v_detalle_producto AS
 	FROM productos p
 	INNER JOIN marca m
 	ON (p.marcaProducto = m.id)
-	INNER JOIN subcategoria sc
+	INNER JOIN subCategoria sc
 	ON (p.subCatProducto = sc.id)
 	INNER JOIN categoria c
 	ON (sc.categoria = c.id);
@@ -244,7 +244,7 @@ CREATE OR REPLACE VIEW v_detalle_stock AS
 			sum(i.stock) as cantidad,
 			i.sucursal,
 			s.nomSucursal
-	FROM opcionproducto op
+	FROM opcionProducto op
 	INNER JOIN inventario i 
 	ON (op.id = i.producto)
 	INNER JOIN sucursal s 

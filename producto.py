@@ -382,7 +382,7 @@ def ver_detalle_producto(con, id):
     cursor.execute(sql_producto, (id,))
     prod_datos = cursor.fetchone()
 
-    sql_imagen = "SELECT id, imagen FROM imagenproducto WHERE producto = %s"
+    sql_imagen = "SELECT id, imagen FROM imagenProducto WHERE producto = %s"
     cursor.execute(sql_imagen, (id,))
     img_datos = cursor.fetchall()
     imagenes = []
@@ -403,7 +403,7 @@ def ver_detalle_producto(con, id):
             'fecInicioVig':valor[3]
         })
 
-    sql_espec = "SELECT id, nombreEspecificacion, valorEspecificacion FROM especificacionproducto WHERE producto = %s"
+    sql_espec = "SELECT id, nombreEspecificacion, valorEspecificacion FROM especificacionProducto WHERE producto = %s"
     cursor.execute(sql_espec, (id,))
     espec_datos = cursor.fetchall()
     especificaciones = []
