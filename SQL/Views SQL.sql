@@ -325,7 +325,7 @@ CREATE OR REPLACE VIEW v_retiros AS
 	FROM retiro r
 	INNER JOIN venta v
 	ON (r.venta = v.id)
-	INNER JOIN estadoretiro er
+	INNER JOIN estadoRetiro er
 	ON (r.estadoRetiro = er.id)
 	LEFT JOIN usuario u
 	ON (v.cliente = u.id)
