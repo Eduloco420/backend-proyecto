@@ -8,6 +8,9 @@ routes_auth = Blueprint("routes_auth", __name__)
 @routes_auth.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
+    admin_flag = int(data.get('admin'))
+    print(data)
+    print(admin_flag)
     conexion = get_db()
     cursor = conexion.connection.cursor()
     sql = "SELECT * FROM usuario WHERE mailUsuario = %s "
@@ -16,7 +19,10 @@ def login():
     if resultado is None:
         return jsonify({"error": "Usuario no encontrado"}), 401
     if resultado[8] == 0:
-        return jsonify({"mensaje":"Usuario bloqueado, favor contactar a soporte"})
+        return jsonify({"mensaje":"Usuario bloqueado, favor contactar a soporte"}), 401
+    if admin_flag == 1 and resultado[5] == 1:
+        print('Usuario sin privilegios')
+        return jsonify({'mensaje': 'Usuario sin privilegios' }), 401
     usuario = { 'id':resultado[0],
                 'rutUsuario':resultado[1],
                 'nomUsuario':resultado[2],
@@ -32,7 +38,7 @@ def login():
         response.status_code = 200
         return response
     else:
-        return jsonify({'mensaje':'contraseña incorrecta'})
+        return jsonify({'mensaje':'contraseña incorrecta'}), 401
 
 @routes_auth.route("/verify/token")
 def verify_token():

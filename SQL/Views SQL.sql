@@ -118,7 +118,8 @@ CREATE OR REPLACE VIEW v_detalle_producto_3 AS (
     op.glosaOpcion,
     SUM(i.stock) AS stockTotal
   FROM opcionProducto op
-  JOIN inventario i ON op.id = i.producto
+  JOIN inventario i ON (op.id = i.producto)
+  WHERE op.opcionActiva = 1
   GROUP BY op.id, op.producto, op.glosaOpcion, op.opcionActiva
 );
 
@@ -255,3 +256,111 @@ CREATE OR REPLACE VIEW v_detalle_stock AS
 				op.glosaOpcion,
 				op.opcionActiva,
 				i.sucursal;
+                
+CREATE OR REPLACE VIEW v_despachos AS
+	SELECT 	d.id,
+			d.venta,
+			d.estadoDespacho,
+			ed.glosaEstadoDespacho,
+			d.fecDespacho,
+			COALESCE(u.rutUsuario, ci.rutClienteInv) AS rutCliente,
+			COALESCE(CONCAT(u.nomUsuario, ' ', u.apeUsuario), CONCAT(ci.nomClienteInv, ' ', ci.apeClienteInv)) AS nombreCliente,
+			COALESCE(u.mailUsuario, ci.mailClienteInv) AS mailCliente
+	FROM despacho d
+	INNER JOIN venta v
+	ON (d.venta = v.id)
+	INNER JOIN estadoDespacho ed
+	ON (d.estadoDespacho = ed.id)
+	LEFT JOIN usuario u
+	ON (v.cliente = u.id)
+	LEFT JOIN clienteInvitado ci
+	ON (v.clienteInvitado = ci.id);
+    
+CREATE OR REPLACE VIEW v_detalle_despacho AS
+	SELECT 	d.id,
+			d.venta,
+			d.estadoDespacho,
+			ed.glosaEstadoDespacho,
+			d.fecDespacho,
+			COALESCE(u.rutUsuario, ci.rutClienteInv) AS rutCliente,
+			COALESCE(CONCAT(u.nomUsuario, ' ', u.apeUsuario), CONCAT(ci.nomClienteInv, ' ', ci.apeClienteInv)) AS nombreCliente,
+			COALESCE(u.mailUsuario, ci.mailClienteInv) AS mailCliente,
+			d.codSeguimiento,
+			d.empresaDespacho,
+			d.enlaceSeguimiento,
+			d.fecEstimadaRecepcion,
+			d.calleDespacho,
+			d.numeroCalleDespacho,
+			d.comunaDespacho,
+			c.nomComuna,
+			c.provincia,
+			p.nomProvincia,
+			p.region,
+			r.nomRegion
+	FROM despacho d
+	INNER JOIN venta v
+	ON (d.venta = v.id)
+	INNER JOIN estadoDespacho ed
+	ON (d.estadoDespacho = ed.id)
+	LEFT JOIN usuario u
+	ON (v.cliente = u.id)
+	LEFT JOIN clienteInvitado ci
+	ON (v.clienteInvitado = ci.id)
+	INNER JOIN comuna c 
+	ON (d.comunaDespacho = c.id)
+	INNER JOIN provincia p
+	ON (c.provincia = p.id)
+	INNER JOIN region r
+	ON (p.region = r.id);
+    
+CREATE OR REPLACE VIEW v_retiros AS 
+	SELECT 	r.id,
+			r.venta,
+			r.estadoRetiro,
+			er.glosaEstadoRetiro,
+			r.fechaRetiro,
+			COALESCE(u.rutUsuario, ci.rutClienteInv) AS rutCliente,
+			COALESCE(CONCAT(u.nomUsuario, ' ', u.apeUsuario), CONCAT(ci.nomClienteInv, ' ', ci.apeClienteInv)) AS nombreCliente,
+			COALESCE(u.mailUsuario, ci.mailClienteInv) AS mailCliente
+	FROM retiro r
+	INNER JOIN venta v
+	ON (r.venta = v.id)
+	INNER JOIN estadoretiro er
+	ON (r.estadoRetiro = er.id)
+	LEFT JOIN usuario u
+	ON (v.cliente = u.id)
+	LEFT JOIN clienteInvitado ci
+	ON (v.clienteInvitado = ci.id);
+    
+CREATE OR REPLACE VIEW v_detalle_retiro AS
+	SELECT 	
+		r.id,
+		r.venta,
+		r.estadoRetiro,
+		er.glosaEstadoRetiro,
+		r.fechaRetiro,
+		COALESCE(u.rutUsuario, ci.rutClienteInv) AS rutCliente,
+		COALESCE(CONCAT(u.nomUsuario, ' ', u.apeUsuario), CONCAT(ci.nomClienteInv, ' ', ci.apeClienteInv)) AS nombreCliente,
+		COALESCE(u.mailUsuario, ci.mailClienteInv) AS mailCliente,
+		s.id AS idSucursal,
+		s.nomSucursal,
+		c.nomComuna,
+		p.nomProvincia,
+		rg.nomRegion
+	FROM retiro r
+	INNER JOIN venta v
+		ON r.venta = v.id
+	INNER JOIN estadoRetiro er
+		ON r.estadoRetiro = er.id
+	INNER JOIN sucursal s
+		ON r.sucursalRetiro = s.id
+	INNER JOIN comuna c
+		ON s.comunaSucursal = c.id
+	INNER JOIN provincia p
+		ON c.provincia = p.id
+	INNER JOIN region rg
+		ON p.region = rg.id
+	LEFT JOIN usuario u
+		ON v.cliente = u.id
+	LEFT JOIN clienteInvitado ci
+		ON v.clienteInvitado = ci.id;

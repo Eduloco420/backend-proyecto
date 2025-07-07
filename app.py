@@ -4,7 +4,7 @@ from config import config
 from dotenv import load_dotenv
 from login import routes_auth
 from db import app, get_db
-import producto, sucursal, ventas, direccion, tienda
+import producto, sucursal, ventas, direccion, tienda, despachos, retiros
 from register import registrar, recuperar_contraseña, cambiar_contraseña, ver_usuario, actualizar_user, activar_usuario
 import json
 from flask_cors import CORS
@@ -45,6 +45,17 @@ def register():
 def post_categoria():
     data = request.get_json()
     return producto.crear_categoria(conexion, data)
+
+@app.route('/ventas/estado/<int:id>', methods=['PUT'])
+def actualizar_estado_venta(id):
+    try:
+        data = request.get_json()
+        print(id)
+        print(data)
+        return ventas.cambiar_estado(conexion, data, id)
+    except Exception as e:
+        return jsonify({'mensaje': 'Error al actualizar el estado', 'error': str(e)}), 500
+
 
 @app.route('/producto/categoria/<int:id>', methods=['PUT'])
 def put_categoria(id):
@@ -282,7 +293,10 @@ def active_user(id):
 
 @app.route('/ventas', methods=['GET'])
 def get_ventas():
-    return ventas.ver_ventas(conexion)
+    id = request.args.get('id')
+    desde = request.args.get('desde')
+    hasta = request.args.get('hasta')
+    return ventas.ver_ventas(conexion, id, desde, hasta)
 
 @app.route('/ventas/<int:id>', methods=['GET'])
 def get_detalle_venta(id):
@@ -310,6 +324,52 @@ def get_tienda():
 def put_tienda():
     data = request.get_json()
     return tienda.editar_tienda(conexion, data)
+
+@app.route('/producto/precio', methods=['POST'])
+def post_precio():
+    data = request.get_json()
+    return producto.agregar_precio(conexion, data)
+
+@app.route('/producto/precio/<int:id>', methods=['DELETE'])
+def delete_precio(id):
+    return producto.eliminar_precio(conexion, id)
+
+@app.route('/producto/descuento', methods=['POST'])
+def post_descuento():
+    data = request.get_json()
+    return producto.agregar_descuento(conexion, data)
+
+@app.route('/despachos', methods=['GET'])
+def get_despachos():
+    id = request.args.get('id')
+    desde = request.args.get('desde')
+    hasta = request.args.get('hasta')
+    return despachos.lista_despachos(conexion, id, desde, hasta)
+
+@app.route('/despacho/<int:id>', methods=['GET'])
+def get_despacho(id):
+    return despachos.detalle_despacho(conexion, id)
+
+@app.route('/despacho/<int:id>', methods=['PUT'])
+def put_despacho(id):
+    data = request.get_json()
+    return despachos.modificar_despacho(conexion, data, id)
+
+@app.route('/retiros', methods=['GET'])
+def get_retiros():
+    id = request.args.get('id')
+    desde = request.args.get('desde')
+    hasta = request.args.get('hasta')
+    return retiros.lista_retiros(conexion, id, desde, hasta)
+
+@app.route('/retiro/<int:id>', methods=['GET'])
+def get_retiro(id):
+    return retiros.detalle_retiro(conexion, id)
+
+@app.route('/retiro/<int:id>', methods=['PUT'])
+def put_retiro(id):
+    data = request.get_json()
+    return retiros.actualizar_estado_retiro(conexion, id, data)
 
 if __name__ == '__main__':
     load_dotenv()  

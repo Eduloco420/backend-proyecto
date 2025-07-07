@@ -44,12 +44,12 @@ def ingresar_venta(con, data):
             calleDespacho = despacho['calleDespacho']
             numeroCalleDespacho = despacho['numeroCalleDespacho']
             comunaDespacho = despacho['comunaDespacho']
-            sqlDespacho = 'INSERT INTO despacho (venta, estadodespacho, calleDespacho, numeroCalleDespacho, comunaDespacho) VALUES (%s, 1, %s, %s, %s)'
+            sqlDespacho = 'INSERT INTO despacho (venta, estadodespacho, calleDespacho, numeroCalleDespacho, comunaDespacho, fecDespacho) VALUES (%s, 1, %s, %s, %s, now())'
 
             cursor.execute(sqlDespacho, (ventaId, calleDespacho, numeroCalleDespacho, comunaDespacho))
 
         elif retiro:
-            sqlRetiro = 'INSERT INTO retiro (venta, estadoRetiro, sucursalRetiro) VALUES (%s, 1, %s)'
+            sqlRetiro = 'INSERT INTO retiro (venta, estadoRetiro, sucursalRetiro, fechaRetiro) VALUES (%s, 1, %s, now())'
             cursor.execute(sqlRetiro, (ventaId, sucursal))
 
         sqlStock = 'INSERT INTO inventario (producto, stock, sucursal) VALUES (%s, %s, %s)'
@@ -74,11 +74,21 @@ def ingresar_venta(con, data):
         response.status_code = 400
         return response
 
-def ver_ventas(con):
+def ver_ventas(con, id, desde, hasta):
     try:
+        print(id)
+        print(desde)
+        print(hasta)
         cursor = con.connection.cursor()
-        sql = "SELECT * FROM v_ventas"
-        cursor.execute(sql)
+        if id:
+            sql = "SELECT * FROM v_ventas WHERE id = %s"
+            cursor.execute(sql, (id,))
+        elif desde and hasta:
+            sql = "SELECT * FROM v_ventas where fecVenta between %s and %s"
+            cursor.execute(sql, (desde, hasta))
+        else:
+            sql = "SELECT * FROM v_ventas"
+            cursor.execute(sql)
         datos = cursor.fetchall()
         ventas = []
         for d in datos:
@@ -167,3 +177,13 @@ def detalle_venta(con, venta):
         response = jsonify({'mensaje':'Error al recuperar datos', 'Error':str(e)})
         response.status_code = 500
         return response
+
+def cambiar_estado(con, data, id):
+    nuevo_estado = data.get('estadoVenta')
+    print(nuevo_estado)
+    cursor = con.connection.cursor()
+    cursor.execute("UPDATE venta SET estadoVenta = %s WHERE id = %s", (nuevo_estado, id))
+    con.connection.commit()
+    cursor.close()
+
+    return jsonify({'mensaje': 'Estado de venta actualizado correctamente'})

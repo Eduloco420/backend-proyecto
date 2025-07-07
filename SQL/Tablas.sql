@@ -199,7 +199,7 @@ CREATE TABLE `retiro` (
   `venta` int,
   `estadoRetiro` int,
   `sucursalRetiro` int,
-  `fechaRetiro` int
+  `fechaRetiro` datetime
 );
 
 CREATE TABLE `estadoPago` (

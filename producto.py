@@ -428,6 +428,20 @@ def ver_detalle_producto(con, id):
             'nomSucursal':st[6]
         })
 
+    sql_descuento = "SELECT * FROM descuentoProducto where producto = %s"
+    cursor.execute(sql_descuento, (id,))
+    descuentos_datos = cursor.fetchall()
+    descuentos = []
+    for dd in descuentos_datos:
+        descuentos.append({
+            'id':dd[0],
+            'producto':dd[1],
+            'fecInicVig':dd[2],
+            'fecTermVig':dd[3],
+            'porcDescueto':dd[4]
+        })
+
+
     producto = {
         'id':prod_datos[0],
         'nomProducto':prod_datos[1],
@@ -445,7 +459,8 @@ def ver_detalle_producto(con, id):
         'imagenes':imagenes,
         'precios':precios,
         'especificaciones':especificaciones,
-        'stock':stock
+        'stock':stock,
+        'descuentos':descuentos
     }
 
     return producto, 200
@@ -568,3 +583,91 @@ def editar_opciones(con, opciones):
     except Exception as e:
         con.connection.rollback()
         return jsonify({'mensaje':'Error cargando los datos', 'error':str(e)}), 400
+
+def agregar_precio(con, data):
+    fecInicioVig = data['fecInicioVig']
+    producto = data['producto']
+    valor = data['valorProducto']
+
+    cursor = con.connection.cursor()
+
+    sql_fecha_duplicada = """
+        SELECT COUNT(*) FROM valorProducto
+        WHERE producto = %s AND fecInicVigValor = %s
+    """
+    cursor.execute(sql_fecha_duplicada, (producto, fecInicioVig))
+    duplicados = cursor.fetchone()[0]
+
+    if duplicados > 0:
+        cursor.close()
+        return jsonify({'mensaje': 'Ya existe un precio con esa fecha de inicio de vigencia'}), 400
+
+    sql_fecha_posterior = """
+        SELECT COUNT(*) FROM valorProducto
+        WHERE producto = %s AND fecInicVigValor > %s
+    """
+    cursor.execute(sql_fecha_posterior, (producto, fecInicioVig))
+    posteriores = cursor.fetchone()[0]
+
+    if posteriores > 0:
+        cursor.close()
+        return jsonify({'mensaje': 'No se puede ingresar una fecha anterior a una ya existente'}), 400
+
+    sql_insert = "INSERT INTO valorProducto (producto, valorProducto, fecInicVigValor) VALUES (%s,%s,%s) "
+    cursor.execute(sql_insert, (producto, valor, fecInicioVig))
+    con.connection.commit()
+    cursor.close()
+
+    return jsonify({'mensaje':'Producto agregado con exito'})
+
+def eliminar_precio(con, id):
+    cursor = con.connection.cursor()
+    sql = "DELETE FROM valorProducto WHERE id = %s"
+    cursor.execute(sql, (id,))
+    con.connection.commit()
+    cursor.close()
+
+    return jsonify({'mensaje':'precio eliminado correctamente'})
+
+def agregar_descuento(con, data):
+    producto = data['producto']
+    fec_inicio = data['fecInicVig']
+    fec_termino = data['fecTermVig']
+    porcentaje = data['porcDescuento']
+
+    cursor = con.connection.cursor()
+
+    if fec_termino < fec_inicio:
+        return jsonify({'mensaje': 'La fecha de término no puede ser menor que la fecha de inicio'}), 400
+
+    sql_duplicada = """
+        SELECT COUNT(*) FROM descuentoProducto
+        WHERE producto = %s AND fecInicVigDescuento = %s
+    """
+    cursor.execute(sql_duplicada, (producto, fec_inicio))
+    if cursor.fetchone()[0] > 0:
+        cursor.close()
+        return jsonify({'mensaje': 'Ya existe un descuento con esa fecha de inicio'}), 400
+
+    sql_cruce = """
+        SELECT COUNT(*) FROM descuentoProducto
+        WHERE producto = %s AND (
+            (fecInicVigDescuento <= %s AND fecTermVigDescuento >= %s) OR
+            (fecInicVigDescuento <= %s AND fecTermVigDescuento >= %s) OR
+            (%s <= fecInicVigDescuento AND %s >= fecTermVigDescuento)
+        )
+    """
+    cursor.execute(sql_cruce, (producto, fec_inicio, fec_inicio, fec_termino, fec_termino, fec_inicio, fec_termino))
+    if cursor.fetchone()[0] > 0:
+        cursor.close()
+        return jsonify({'mensaje': 'Ya existe un descuento en un rango de fechas que se cruza con el ingresado'}), 400
+
+    sql_insert = """
+        INSERT INTO descuentoProducto (producto, fecInicVigDescuento, fecTermVigDescuento, porcDescuento)
+        VALUES (%s, %s, %s, %s)
+    """
+    cursor.execute(sql_insert, (producto, fec_inicio, fec_termino, porcentaje))
+    con.connection.commit()
+    cursor.close()
+
+    return jsonify({'mensaje': 'Descuento agregado con éxito'})
