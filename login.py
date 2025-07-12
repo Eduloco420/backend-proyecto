@@ -42,4 +42,6 @@ def login():
 @routes_auth.route("/verify/token")
 def verify_token():
     token = request.headers['Authorization']
-    return valida_token(token, output=True)
+    response = valida_token(token, output=True)
+    print(response)
+    return response

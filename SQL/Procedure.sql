@@ -7,7 +7,7 @@ BEGIN
     -- Verificar si el producto está en alguna venta
     SELECT COUNT(*) INTO v_existeVenta
     FROM detalleVenta
-    WHERE producto = p_idProducto;
+    WHERE opcionProducto in (SELECT id from opcionProducto where producto = p_idProducto);
 
     IF v_existeVenta > 0 THEN
         SIGNAL SQLSTATE '45000'

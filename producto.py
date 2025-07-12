@@ -64,6 +64,7 @@ def crear_marca(con,data):
     return response
 
 def crear_producto(con, data, imagenes, app):
+    print(data)
     nom_producto = data['nomProducto']
     desc_producto = data['descProducto']
     subcategoria = data['subCategoria']
@@ -117,13 +118,12 @@ def crear_producto(con, data, imagenes, app):
                     public_id=f"{producto_id}_{uuid.uuid4().hex}"
                 )
 
-                public_id_completo = result['public_id']  # productos/46_abc123xyz
-                formato = result['format']                # webp
+                public_id_completo = result['public_id'] 
+                formato = result['format']              
 
-                # Ahora extraemos sólo el nombre sin el folder
-                nombre_sin_folder = public_id_completo.split('/')[-1]  # 46_abc123xyz
+                nombre_sin_folder = public_id_completo.split('/')[-1] 
 
-                nombre_archivo = f"{nombre_sin_folder}.{formato}"  # 46_abc123xyz.webp
+                nombre_archivo = f"{nombre_sin_folder}.{formato}" 
 
                 cursor.execute(sqlImagen, (producto_id, nombre_archivo))
 

@@ -6,13 +6,16 @@ from email.mime.text import MIMEText
 import os
 from dotenv import load_dotenv
 import MySQLdb
+from email.header import Header
+from email.utils import formataddr
+
 
 # ========================================
 # FUNCIÓN: Envío de correo de activación
 # USO: Llamada internamente por registrar()
 # PROPÓSITO: Enviar email con enlace de activación cuando un usuario se registra
 # ========================================
-def enviar_correo(destinatario, nombre, apellido, dominio, idUsuario):  # AGREGUÉ idUsuario - KARLA
+def enviar_correo(destinatario, nombre, apellido, dominio, idUsuario):
     remitente = os.getenv('MAIL')
     password = os.getenv('MAIL_PASS')
 
@@ -20,22 +23,28 @@ def enviar_correo(destinatario, nombre, apellido, dominio, idUsuario):  # AGREGU
     puerto = 587  
 
     msg = MIMEMultipart()
-    msg["From"] = remitente
+    msg["From"] = formataddr((str(Header("Multishop", "utf-8")), remitente))
     msg["To"] = destinatario
-    msg["Subject"] = "Confirmación de Registro"
+    msg["Subject"] = Header("Confirmación de Registro", "utf-8")
 
     cuerpo = f"""
-    Hola {nombre} {apellido},
+    Hola {nombre.strip()} {apellido.strip()},
 
     Gracias por registrarte en nuestro sitio. 
     Activa tu cuenta haciendo clic en el siguiente enlace:
 
-    {dominio}/activar-cuenta?email={destinatario}
+    {dominio}/activar-cuenta?id={idUsuario}
 
     Saludos,
-    Tu equipo.
+    Multishop
     """
-    msg.attach(MIMEText(cuerpo, "plain"))
+    print(repr(nombre))
+    print(repr(apellido))
+    print(repr(remitente))
+    print(repr(dominio))
+    print(repr(password))
+
+    msg.attach(MIMEText(cuerpo, "plain", "utf-8"))
 
     try:
         servidor = smtplib.SMTP(servidor_smtp, puerto)
@@ -68,13 +77,13 @@ def registrar(con, data):
         cursor = con.connection.cursor()
         sql = ('INSERT INTO usuario (rutUsuario, nomUsuario, apeUsuario, mailUsuario, rolUsuario, passUsuario, fecCreacionUsuario, activeUsuario) VALUES (%s, %s, %s, %s, %s, %s, now(), false);')
         cursor.execute(sql, (rut,nombre,apellido,mail,rol,hashedPassword))
-        idUsuario = cursor.lastrowid  # OBTIENE EL ID DEL USUARIO RECIÉN CREADO - KARLA
+        idUsuario = cursor.lastrowid 
 
         con.connection.commit()
         sql = 'SELECT dominioTienda from tienda'
         cursor.execute(sql)
         dominio = cursor.fetchone()[0]
-        enviar_correo(destinatario=mail, nombre=nombre, apellido=apellido, dominio=dominio, idUsuario=idUsuario)  # AGREGUÉ idUsuario - KARLA
+        enviar_correo(destinatario=mail, nombre=nombre, apellido=apellido, dominio=dominio, idUsuario=idUsuario)
         response = jsonify({'mensaje':'Usuario registrado exitosamente. Revisa tu correo para activar tu cuenta.'})
         response.status_code = 200
         return response
